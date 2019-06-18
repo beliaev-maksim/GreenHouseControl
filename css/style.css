@@ -1,6 +1,6 @@
 /*
 
-Template 2085 Neuron
+Template 2085 GreenHouse
 
 http://www.tooplate.com/view/2085-neuron
 
@@ -27,7 +27,7 @@ h1,h2,h3,h4,h5,h6 {
 }
 
 h1 {
-    font-size: 62px;
+    font-size: 48px;
     padding-bottom: 14px;
     margin-bottom: 0px;
 }
@@ -98,7 +98,7 @@ a:hover, a:active, a:focus {
   box-sizing: border-box;
 }
 
-#about, 
+#control, 
 #gallery,
 #contact,
 #blog, 
@@ -107,14 +107,25 @@ a:hover, a:active, a:focus {
   padding-bottom: 80px;
 }
 
-.main-about,
+.main-control,
 .main-single-post,
-.main-gallery,
+.main-browser,
 .main-contact {
-  height: 65vh;
+  height: 15vh;
 }
 
 .overlay {
+  background: rgba(0,0,0,0.7 );
+  width: 100%;
+  height: 15vh;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.overlay-home {
   background: rgba(0,0,0,0.7 );
   width: 100%;
   height: 100vh;
@@ -280,24 +291,7 @@ a:hover, a:active, a:focus {
 }
 
 .main-home {
-  background: url('../images/home-bg.jpg') no-repeat;
   height: 100vh;
-}
-
-.main-about {
-  background: url('../images/about-bg.jpg') no-repeat;
-}
-
-.main-single-post {
-  background: url('../images/single-post-bg.jpg') no-repeat;
-}
-
-.main-gallery {
-  background: url('../images/gallery-bg.jpg') no-repeat;
-}
-
-.main-contact {
-  background: url('../images/contact-bg.jpg') no-repeat;
 }
 
 #particles-js {
@@ -336,67 +330,25 @@ a:hover, a:active, a:focus {
 
 
 /*---------------------------------------
-   About section              
+   Control section              
 -----------------------------------------*/
 
-#about .col-md-6 {
+#control .col-md-6 {
   padding-top: 22px;
   padding-bottom: 32px;
 }
 
-#about .col-md-6 img {
+#control .col-md-6 img {
   padding: 22px 0px 22px 22px;
 }
 
-#about .col-md-4 {
+#control .col-md-4 {
   padding-bottom: 32px;
 }
 
-#about .col-md-4 img {
+#control .col-md-4 img {
   padding-top: 12px;
 }
-
-
-
-/*---------------------------------------
-   Gallery section              
------------------------------------------*/
-
-#gallery span {
-  display: block;
-  padding-bottom: 32px;
-}
-
-#gallery .col-md-6 {
-  padding-left: 0px;
-  padding-right: 0px;
-}
-
-#gallery .gallery-thumb {
-  background-color: #ffffff;
-  box-shadow: 0px 1px 2px 0px rgba(90, 91, 95, 0.15);
-  cursor: pointer;
-  display: block;
-  position: relative;
-  top: 0px;
-  transition: all 0.4s ease-in-out;
-}
-
-#gallery .gallery-thumb:hover {
-  box-shadow: 0px 16px 22px 0px rgba(90, 91, 95, 0.3);
-  top: -5px;
-}
-
-#gallery .gallery-thumb img {
-  width: 100%;
-}
-
-#gallery .col-md-12 p {
-  padding-top: 22px;
-  text-align: center;
-}
-
-
 
 /*---------------------------------------
    Contact section              
@@ -443,33 +395,7 @@ a:hover, a:active, a:focus {
   background: #333;
 }
 
-
-
-/*---------------------------------------
-   Blog section              
------------------------------------------*/
-
-.blog-post-thumb {
-  border-bottom: 1px solid #f0f0f0;
-  padding-top: 32px;
-  padding-bottom: 62px;
-  margin-bottom: 32px;
-}
-
-.blog-post-thumb:last-child {
-  border-bottom: 0px;
-  padding-bottom: 32px;
-  margin-bottom: 0px;
-}
-
-.blog-post-image,
-.blog-post-video {
-  padding-top: 22px;
-  padding-bottom: 22px;
-  width: 100%;
-}
-
-#about img,
+#control img,
 .blog-post-image img {
   border-radius: 1px;
 }
@@ -568,7 +494,7 @@ a:hover, a:active, a:focus {
   padding-bottom: 18px;
 }
 
-#about .col-md-6, #about .col-md-4,
+#control .col-md-6, #control .col-md-4,
 .blog-comment-form .col-md-4 {
   padding-left: 0px;
 }
@@ -732,9 +658,9 @@ footer .footer-copyright {
 
 @media (max-width: 980px) {
 
-  .main-about,
+  .main-control,
   .main-single-post,  
-  .main-gallery,
+  .main-browser,
   .main-contact {
     height: 35vh;
   }
@@ -752,7 +678,7 @@ footer .footer-copyright {
     font-size: 26px;
   }
 
-  #about .col-md-6 img {
+  #control .col-md-6 img {
     padding-left: 0px;
   }
 
@@ -773,7 +699,7 @@ footer .footer-copyright {
     font-size: 42px;
   }
 
-  #about, #gallery,
+  #control, #gallery,
   #contact,
   #blog, #blog-single-post {
     padding-top: 60px;
