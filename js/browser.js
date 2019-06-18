@@ -15,10 +15,10 @@ function createFileUploader(element, tree, editor){
     button.innerHTML = 'Upload';
     document.getElementById(element).appendChild(button);
     var mkdir = document.createElement("button");
-    mkdir.innerHTML = 'MkDir';
+    mkdir.innerHTML = 'Make Directory';
     document.getElementById(element).appendChild(mkdir);
     var mkfile = document.createElement("button");
-    mkfile.innerHTML = 'MkFile';
+    mkfile.innerHTML = 'Make File';
     document.getElementById(element).appendChild(mkfile);
 
     function httpPostProcessRequest(){
