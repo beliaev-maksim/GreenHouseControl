@@ -1,6 +1,6 @@
 /*
 
-Template 2085 Neuron
+Template 2085 GreenHouse
 
 http://www.tooplate.com/view/2085-neuron
 
@@ -98,7 +98,7 @@ a:hover, a:active, a:focus {
   box-sizing: border-box;
 }
 
-#about, 
+#control, 
 #gallery,
 #contact,
 #blog, 
@@ -107,11 +107,11 @@ a:hover, a:active, a:focus {
   padding-bottom: 80px;
 }
 
-.main-about,
+.main-control,
 .main-single-post,
 .main-gallery,
 .main-contact {
-  height: 65vh;
+  height: 15vh;
 }
 
 .overlay {
@@ -295,8 +295,8 @@ a:hover, a:active, a:focus {
   height: 100vh;
 }
 
-.main-about {
-  background: url('../images/about-bg.jpg') no-repeat;
+.main-control {
+  background: url('../images/control-bg.jpg') no-repeat;
 }
 
 .main-single-post {
@@ -347,23 +347,23 @@ a:hover, a:active, a:focus {
 
 
 /*---------------------------------------
-   About section              
+   Control section              
 -----------------------------------------*/
 
-#about .col-md-6 {
+#control .col-md-6 {
   padding-top: 22px;
   padding-bottom: 32px;
 }
 
-#about .col-md-6 img {
+#control .col-md-6 img {
   padding: 22px 0px 22px 22px;
 }
 
-#about .col-md-4 {
+#control .col-md-4 {
   padding-bottom: 32px;
 }
 
-#about .col-md-4 img {
+#control .col-md-4 img {
   padding-top: 12px;
 }
 
@@ -438,7 +438,7 @@ a:hover, a:active, a:focus {
   width: 100%;
 }
 
-#about img,
+#control img,
 .blog-post-image img {
   border-radius: 1px;
 }
@@ -537,7 +537,7 @@ a:hover, a:active, a:focus {
   padding-bottom: 18px;
 }
 
-#about .col-md-6, #about .col-md-4,
+#control .col-md-6, #control .col-md-4,
 .blog-comment-form .col-md-4 {
   padding-left: 0px;
 }
@@ -701,7 +701,7 @@ footer .footer-copyright {
 
 @media (max-width: 980px) {
 
-  .main-about,
+  .main-control,
   .main-single-post,  
   .main-gallery,
   .main-contact {
@@ -721,7 +721,7 @@ footer .footer-copyright {
     font-size: 26px;
   }
 
-  #about .col-md-6 img {
+  #control .col-md-6 img {
     padding-left: 0px;
   }
 
@@ -742,7 +742,7 @@ footer .footer-copyright {
     font-size: 42px;
   }
 
-  #about, #gallery,
+  #control, #gallery,
   #contact,
   #blog, #blog-single-post {
     padding-top: 60px;
