@@ -2,6 +2,7 @@
         z-index: 300;
         position: absolute;
         left: 5px;
+        top: calc(50px+37px+15vh);
         border: 1px solid #444;
         background-color: #F5F5F5;
         display: none;
@@ -91,7 +92,7 @@
 
       .css-treeview label {
         background-position: 18px 0;
-      }
+      } 
 
       .css-treeview label::before {
         content: "";
@@ -125,18 +126,18 @@
 
       #uploader { 
         position: absolute;
-        top: 0;
+        top: calc(50px+37px+15vh);
         right: 0;
         left: 0;
         height:28px;
         line-height: 24px;
         padding-left: 10px;
-        background-color: #444;
-        color:#EEE;
+        /* background-color: #444;
+        color:#EEE; */
       }
       #tree { 
         position: absolute;
-        top: 28px;
+        top: calc(50px+37px+15vh + 28px);
         bottom: 0;
         left: 0;
         width:200px;
@@ -144,7 +145,7 @@
       }
       #editor, #preview { 
         position: absolute;
-        top: 28px;
+        top: calc(50px+37px+15vh + 28px);
         right: 0;
         bottom: 0;
         left: 200px;
@@ -152,4 +153,23 @@
       #preview {
         background-color: #EEE;
         padding:5px;
+      }
+
+      #mkdir-button,
+      #upload-button,
+      #mkfile-button,
+      #upload-button {
+        background: #bfba55;
+        border-radius: 100px;
+        border: none;
+        color: #ffffff;
+        font-weight: bold;
+        transition: all 0.4s ease-in-out;
+      }
+      
+      #mkdir-button:hover,
+      #upload-button:hover,
+      #mkfile-button:hover,
+      #upload-button:hover {
+        background: #333;
       }

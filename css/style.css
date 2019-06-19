@@ -109,7 +109,7 @@ a:hover, a:active, a:focus {
 
 .main-control,
 .main-single-post,
-.main-gallery,
+.main-browser,
 .main-contact {
   height: 15vh;
 }
@@ -291,24 +291,7 @@ a:hover, a:active, a:focus {
 }
 
 .main-home {
-  background: url('../images/home-bg.jpg') no-repeat;
   height: 100vh;
-}
-
-.main-control {
-  background: url('../images/control-bg.jpg') no-repeat;
-}
-
-.main-single-post {
-  background: url('../images/single-post-bg.jpg') no-repeat;
-}
-
-.main-gallery {
-  background: url('../images/gallery-bg.jpg') no-repeat;
-}
-
-.main-contact {
-  background: url('../images/contact-bg.jpg') no-repeat;
 }
 
 #particles-js {
@@ -703,7 +686,7 @@ footer .footer-copyright {
 
   .main-control,
   .main-single-post,  
-  .main-gallery,
+  .main-browser,
   .main-contact {
     height: 35vh;
   }
