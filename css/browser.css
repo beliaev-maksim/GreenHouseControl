@@ -2,7 +2,7 @@
         z-index: 300;
         position: absolute;
         left: 5px;
-        top: calc(50px+37px+15vh);
+        top: calc(50px + 37px + 15vh);
         border: 1px solid #444;
         background-color: #F5F5F5;
         display: none;
@@ -126,18 +126,16 @@
 
       #uploader { 
         position: absolute;
-        top: calc(50px+37px+15vh);
+        top: calc(50px + 37px + 15vh);
         right: 0;
         left: 0;
-        height:28px;
-        line-height: 24px;
+        height:40px;
         padding-left: 10px;
-        /* background-color: #444;
-        color:#EEE; */
+        /* overflow-x: hidden; */
       }
       #tree { 
         position: absolute;
-        top: calc(50px+37px+15vh + 28px);
+        top: calc(50px + 37px + 40px + 15vh);
         bottom: 0;
         left: 0;
         width:200px;
@@ -145,7 +143,7 @@
       }
       #editor, #preview { 
         position: absolute;
-        top: calc(50px+37px+15vh + 28px);
+        top: calc(50px + 37px + 40px + 15vh);
         right: 0;
         bottom: 0;
         left: 200px;
@@ -159,17 +157,23 @@
       #upload-button,
       #mkfile-button,
       #upload-button {
-        background: #bfba55;
+        background: #d3394c;
         border-radius: 100px;
         border: none;
+        line-height:25px;
         color: #ffffff;
         font-weight: bold;
         transition: all 0.4s ease-in-out;
+        margin-right: 10px;
+      }
+      #upload-path{
+        margin-right: 10px;
+        line-height:25px;
       }
       
       #mkdir-button:hover,
       #upload-button:hover,
       #mkfile-button:hover,
       #upload-button:hover {
-        background: #333;
+        background: #722040;
       }

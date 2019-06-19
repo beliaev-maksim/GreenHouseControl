@@ -395,32 +395,6 @@ a:hover, a:active, a:focus {
   background: #333;
 }
 
-
-
-/*---------------------------------------
-   Blog section              
------------------------------------------*/
-
-.blog-post-thumb {
-  border-bottom: 1px solid #f0f0f0;
-  padding-top: 32px;
-  padding-bottom: 62px;
-  margin-bottom: 32px;
-}
-
-.blog-post-thumb:last-child {
-  border-bottom: 0px;
-  padding-bottom: 32px;
-  margin-bottom: 0px;
-}
-
-.blog-post-image,
-.blog-post-video {
-  padding-top: 22px;
-  padding-bottom: 22px;
-  width: 100%;
-}
-
 #control img,
 .blog-post-image img {
   border-radius: 1px;
