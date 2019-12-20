@@ -1,4 +1,18 @@
 // main file to handle server and main loop
+// in server file we initialize setup() funcion with:
+// sync_time, init of dht sensor, wifi server
+
+#include <DHT.h>
+
+//Constants
+#define DHTPIN 7     // what pin we're connected to
+#define DHTTYPE DHT22   // DHT 22  (AM2302)
+DHT dht(DHTPIN, DHTTYPE); //// Initialize DHT sensor for normal 16mhz Arduino
+
+int chk;
+float hum;  //Stores humidity value
+float temp; //Stores temperature value
+
 int timer_on = 0;
 int timer_off = 0;
 counter = 0;

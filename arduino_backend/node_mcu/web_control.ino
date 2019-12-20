@@ -1,15 +1,9 @@
-// initialize global variables, their values are set from Web
-int min_temp = 18, max_temp = 25;
-int min_humidity = 30, max_humidity = 60;
-int sunrise, sunset;
-bool fan_manual_off = false;
-bool fan_manual_on = false;
-bool light_manual_off = false;
-bool light_manual_on = false;
+int min_temp, max_temp;
+int min_humidity, max_humidity;
+String sunrise, sunset;
 File settings_file;
 File server_time_file;
 
-// define proper constants for work with files
 uint8_t const O_READ = 0X01;
 uint8_t const O_WRITE = 0X02;
 uint8_t const O_APPEND = 0X04;
@@ -40,12 +34,12 @@ void change_settings() {
   
   if (server.arg("sunrise")!= ""){
     Serial.println("sunrise: " + server.arg("sunrise"));
-    sunrise = server.arg("sunrise").toInt();
+    sunrise = server.arg("sunrise");
   }
   
   if (server.arg("sunset")!= ""){
     Serial.println("sunset: " + server.arg("sunset"));
-    sunset = server.arg("sunset").toInt();
+    sunset = server.arg("sunset");
   }
 
   // write all new setting on SD card
