@@ -298,7 +298,9 @@ void setup(void) {
     DBG_OUTPUT_PORT.println("SD Card initialized.");
     hasSD = true;
   }
-  
-  
-  sync_time();
+}
+
+void loop(void) {
+  server.handleClient();
+  MDNS.update();
 }
