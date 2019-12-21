@@ -7,20 +7,12 @@
 #include <ArduinoJson.h>
 
 // DHT sensor
-#define DHTPIN 7         // what pin we're connected to
+#define DHTPIN 7         // digital pin 7
 #define DHTTYPE DHT22     // DHT 22    (AM2302)
 DHT dht(DHTPIN, DHTTYPE); //// Initialize DHT sensor for normal 16mhz Arduino
 
-float hum;    //Stores humidity value from DHT sensor
-float temp; //Stores temperature value from DHT sensor
-
 // Port definition for NodeMCU-Uno communication
 SoftwareSerial txrx23(2,3);
-
-// definition of data for moisture sensor
-int water = 1900;  // totally wet
-int air = 3600;  // totally dry 
-int rh = (air - water)/100;
 
 int timer = 0;
 int timer_off = 0;
@@ -48,24 +40,24 @@ void loop(void) {
     // current limitation    that start time is always less than stop time 
     // start 16:00, stop 02:00 is not allowed
     if (light_manual_on == true || 
-            (sunrise < time_in_s < sunset && light_manual_off != true)) {
-            turn_light_on();
+        (sunrise < time_in_s < sunset && light_manual_off != true)) {
+            int a = 1; //turn_light_on();  // todo
     } else {
-            turn_light_off();
+            int a = 1; //turn_light_off();
     }
     
-    hum = dht.readHumidity();
-    temp= dht.readTemperature();
+    //Stores humidity and temperature value from DHT sensor
+    float hum = dht.readHumidity();
+    float temp= dht.readTemperature();
     
     // todo need to read min max values from MCU
     if (timer == 90 ||
         temp > max_temp ||
         hum > max_humid) {
-        turn_fan_on();
-        timer = 0;
-        triger = true;
-        timer_off = 0;
-            
+            turn_fan_on();
+            timer = 0;
+            triger = true;
+            timer_off = 0;            
     }
     
     if (triger == true) {
@@ -82,13 +74,14 @@ void loop(void) {
     
     // send data only once per hour
     // todo maybe send every 10 min
-    if (counter == 60) {
+    //if (counter == 60) {
+    if (counter == 6) {
         moist1 = get_moisture(A0) // read data from analog port A0
         counter = 0;
         send_to_mcu(hum, temp, moist1);       
     }
-    
-    delay(60000); // wait 1 min  //todo check buffer size when communicate
+    delay(6000);
+    //delay(60000); // wait 1 min  //todo check buffer size when communicate
 }
 
 void send_to_mcu(float hum, float temp, int moist1) {
@@ -108,6 +101,11 @@ void send_to_mcu(float hum, float temp, int moist1) {
 }
 
 void get_moisture(const port) {
+    // definition of data for moisture sensor, collibrate analog data to RH
+    int water = 1900;  // totally wet, sensor was in water
+    int air = 3600;  // totally dry, sensor was in air
+    int rh = (air - water)/100;
+
     float sensor_value = 0;
 
     // make 100 samples of data every 1ms
@@ -118,7 +116,6 @@ void get_moisture(const port) {
 
     // get average value of data
     sensor_value  /= 100.0; 
-
 
     int moisture = round((air - sensor_value) / rh);
 
