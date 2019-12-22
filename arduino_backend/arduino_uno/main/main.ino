@@ -5,7 +5,7 @@
 #include <DHT.h>
 #include <SoftwareSerial.h>
 #include <ArduinoJson.h>
-#include <time.h>
+#include <TimeLib.h> 
 
 // DHT sensor
 #define DHTPIN 7         // digital pin 7
@@ -18,14 +18,11 @@ SoftwareSerial txrx23(2,3);
 // define variable to store time, used instead of delay()
 unsigned long previousMillis = 0; 
 unsigned long previous_sent_timer = 0; // timer to count when we send data to MCU
-const long send_data_every = 10000; // send data to MCU every 10s
+unsigned long previous_dht_read = 0; // timer to count when we send data to MCU
+const long send_data_every = 600000; // send data to MCU every 10min
+const long read_dht_every = 10000; // read data from DHT sensor every 10s
 const long enable_fan_every = 5400000; // 5400s->90min, needed to circulate air
 const long fan_on_time = 900000; // fan will be ON during this time frame
-
-int timer = 0;
-int timer_off = 0;
-int counter = 0;
-bool triger = false;
 
 // test data
 int max_humid = 65;
@@ -34,6 +31,9 @@ int max_temp = 25;
 int min_temp = 15;
 int sunrise = 25200;
 int sunset = 82800;
+
+float hum = 10;
+float temp = 10;
 
 bool light_manual_off = false;
 bool light_manual_on = false;
@@ -48,15 +48,12 @@ void setup()
 //todo read time that is set for mcu
 
 void loop(void) {    
-    // get current system time
-    time_t now;
-    struct tm * timeinfo;
-    time(&now);
-    timeinfo = localtime(&now);    
-    Serial.println(timeinfo->tm_hour);
+    // get current system wake up time
+    unsigned long current_millis = millis();
 
     //convert to seconds
-    int time_in_s = (timeinfo->tm_hour * 60 * 60) + (timeinfo->tm_min * 60) + timeinfo->tm_sec;
+    int time_in_s = (hour() * 60 * 60) + (minute() * 60) + second();
+    Serial.println(time_in_s);
     
     // current limitation    that start time is always less than stop time 
     // start 16:00, stop 02:00 is not allowed
@@ -67,11 +64,16 @@ void loop(void) {
             int a = 1; //turn_light_off();
     }
     
-    //Stores humidity and temperature value from DHT sensor
-    float hum = dht.readHumidity();
-    float temp= dht.readTemperature();
+    //Stores humidity and temperature value from DHT sensor, read values every 10s
+    if (current_millis - previous_dht_read >= read_dht_every){
+      previous_dht_read = current_millis;
+      
+      float hum = dht.readHumidity();
+      float temp= dht.readTemperature();
+      Serial.print("temperature:  ");
+      Serial.println(temp);
+    }
 
-    unsigned long current_millis = millis();
     // todo need to read min max for temp and humid values from MCU
     if (current_millis - previousMillis >= enable_fan_every ||
         temp > max_temp ||
