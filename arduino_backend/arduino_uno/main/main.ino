@@ -15,6 +15,13 @@ DHT dht(DHTPIN, DHTTYPE); //// Initialize DHT sensor for normal 16mhz Arduino
 // Port definition for NodeMCU-Uno communication
 SoftwareSerial txrx23(2,3);
 
+// define variable to store time, used instead of delay()
+unsigned long previousMillis = 0; 
+unsigned long previous_sent_timer = 0; // timer to count when we send data to MCU
+const long send_data_every = 10000; // send data to MCU every 10s
+const long enable_fan_every = 5400000; // 5400s->90min, needed to circulate air
+const long fan_on_time = 900000; // fan will be ON during this time frame
+
 int timer = 0;
 int timer_off = 0;
 int counter = 0;
@@ -22,8 +29,9 @@ bool triger = false;
 
 // test data
 int max_humid = 65;
-int min_humid = 40;
+int min_humid = 30;
 int max_temp = 25;
+int min_temp = 15;
 int sunrise = 25200;
 int sunset = 82800;
 
@@ -62,41 +70,31 @@ void loop(void) {
     //Stores humidity and temperature value from DHT sensor
     float hum = dht.readHumidity();
     float temp= dht.readTemperature();
-    
-    // todo need to read min max values from MCU
-    if (timer == 90 ||
+
+    unsigned long current_millis = millis();
+    // todo need to read min max for temp and humid values from MCU
+    if (current_millis - previousMillis >= enable_fan_every ||
         temp > max_temp ||
         hum > max_humid) {
-            //turn_fan_on();
-            timer = 0;
-            triger = true;
-            timer_off = 0;            
+            previousMillis = current_millis;
+            //turn_fan_on();     
     }
-    
-    if (triger == true) {
-        timer_off++;
-    }
-    
+
     // after we enable fan we will give it to work at least 15 min to have system stability
-    if (timer_off == 15) {
+    if (current_millis - previousMillis >= fan_on_time ||
+        temp < min_temp ||
+        hum < min_humid) {
         //turn_fan_off();
-        timer_off = 0;
-        triger = false;
-        timer = 0;
+        int b = 4;
     }
     
     // send data only once per hour
     // todo maybe send every 10 min
-    //if (counter == 60) {
-    if (counter == 3) {
+    if (current_millis - previous_sent_timer >= send_data_every) {
+        previous_sent_timer = current_millis;
         int moist1 = get_moisture(A0); // read data from analog port A0
-        counter = 0;
         send_to_mcu(hum, temp, moist1);       
     }
-    counter++;
-    timer++;
-    delay(5000);
-    //delay(60000); // wait 1 min  //todo check buffer size when communicate
 }
 
 void send_to_mcu(float hum, float temp, int moist1) {
