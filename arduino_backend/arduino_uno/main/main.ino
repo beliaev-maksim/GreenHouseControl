@@ -20,8 +20,14 @@ unsigned long previous_millis = 0;
 unsigned long previous_sent_timer = 0; // timer to count when we send data to MCU
 unsigned long previous_dht_read = 0; // timer to count when we send data to MCU
 
-float hum1, temp1, hum2, temp2;
-float temp_measur_max, hum_measur_max, temp_measur_min, hum_measur_min;
+// define structure for data from  DHT sensors
+typedef struct
+ {
+     float hum1, temp1, hum2, temp2;
+     float temp_max, hum_max, temp_min, hum_min;
+ }  dht_struct;
+dht_struct dht_vals;  // initialize dht_values with just defined struct
+
 
 void setup()
 {
@@ -39,7 +45,6 @@ void loop(void) {
 
     //convert to seconds
     int time_in_s = (hour() * 60 * 60) + (minute() * 60) + second();
-    Serial.println(time_in_s);
     
     // current limitation    that start time is always less than stop time 
     // start 16:00, stop 02:00 is not allowed
@@ -53,29 +58,22 @@ void loop(void) {
     //Stores humidity and temperature value from DHT sensor, read values every 10s
     if (current_millis - previous_dht_read >= read_dht_every){
       previous_dht_read = current_millis;
-      
-      hum1, temp1, hum2, temp2 = get_dht_data();
-      temp_measur_max = max(temp1, temp2);
-      hum_measur_max = max(hum1, hum2);
-      temp_measur_min = min(temp1, temp2);
-      hum_measur_min = min(hum1, hum2);
-      
-      Serial.print("temperature:  ");
-      Serial.println(temp2);
+
+      dht_vals = get_dht_data();
     }
 
     // todo need to read min max for temp and humid values from MCU
     if (current_millis - previous_millis >= enable_fan_every ||
-        temp_measur_max > max_temp ||
-        hum_measur_max > max_humid) {
+        dht_vals.temp_max > max_temp ||
+        dht_vals.hum_max > max_humid) {
             previous_millis = current_millis;
             //turn_fan_on();     
     }
 
     // after we enable fan we will give it to work at least 15 min to have system stability
     if (current_millis - previous_millis >= fan_on_time ||
-        temp_measur_min < min_temp ||
-        hum_measur_min < min_humid) {
+        dht_vals.temp_min < min_temp ||
+        dht_vals.hum_min < min_humid) {
         //turn_fan_off();
         int b = 4;
     }
@@ -85,15 +83,17 @@ void loop(void) {
     if (current_millis - previous_sent_timer >= send_data_every) {
         previous_sent_timer = current_millis;
         int moist1 = get_moisture(moisture_sens1_pin);
-        send_to_mcu(hum1, temp1, hum2, temp2, moist1);       
+        send_to_mcu(dht_vals, moist1);       
     }
 }
 
-void send_to_mcu(float hum1, float temp1, float hum2, float temp2, int moist1) {
+void send_to_mcu(dht_struct dht_vals, int moist1) {
     // create JSON for sensor data
     StaticJsonDocument<200> conditions;
-    conditions["hum1"] = hum1;
-    conditions["temp1"] = temp1;
+    conditions["hum1"] = dht_vals.hum1;
+    conditions["temp1"] = dht_vals.temp1;
+    conditions["hum2"] = dht_vals.hum2;
+    conditions["temp2"] = dht_vals.temp2;
     conditions["moist1"] = moist1;
     
     // send data to NodeMCU
@@ -130,25 +130,35 @@ int get_moisture(const uint8_t port) {
     return moisture;
 }
 
-int get_dht_data(){
-
-  float hum1 = 0, temp1 = 0, hum2 = 0, temp2 = 0;
+dht_struct get_dht_data(){
+  // function to calculate AVG from multiple measurments from two sensors
+  // should be defined as dht_struct type to be assigned later to a dht_vals structure
+  
+  // initialize new structure and all members as zeros
+  dht_struct dht_vals = {0, 0, 0, 0, 0, 0, 0, 0};
 
   // make 100 samples of data every 1ms
   for (int i = 0; i <= 100; i++) { 
-      hum1 += dht1.readHumidity();
-      temp1 += dht1.readTemperature();
+      dht_vals.hum1 += dht1.readHumidity();
+      dht_vals.temp1 += dht1.readTemperature();
     
-      hum2 += dht2.readHumidity();
-      temp2 += dht2.readTemperature();
+      dht_vals.hum2 += dht2.readHumidity();
+      dht_vals.temp2 += dht2.readTemperature();
       delay(1); 
   } 
 
     // get average value of data
-    hum1  /= 100.0; 
-    temp1  /= 100.0; 
-    hum2  /= 100.0; 
-    temp2  /= 100.0; 
+    dht_vals.hum1  /= 100.0; 
+    dht_vals.temp1  /= 100.0; 
+    dht_vals.hum2  /= 100.0; 
+    dht_vals.temp2  /= 100.0; 
+
+  // evaluate min and max values
+    dht_vals.temp_max = max(dht_vals.temp1, dht_vals.temp2);
+    dht_vals.hum_max = max(dht_vals.hum1, dht_vals.hum2);
+    dht_vals.temp_min = min(dht_vals.temp1, dht_vals.temp2);
+    dht_vals.hum_min = min(dht_vals.hum1, dht_vals.hum2);
     
-  return hum1, temp1, hum2, temp2;
+
+  return dht_vals;
 }
