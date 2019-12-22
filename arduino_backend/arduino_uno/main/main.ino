@@ -5,6 +5,7 @@
 #include <DHT.h>
 #include <SoftwareSerial.h>
 #include <ArduinoJson.h>
+#include <time.h>
 
 // DHT sensor
 #define DHTPIN 7         // digital pin 7
@@ -19,10 +20,21 @@ int timer_off = 0;
 int counter = 0;
 bool triger = false;
 
+// test data
+int max_humid = 65;
+int min_humid = 40;
+int max_temp = 25;
+int sunrise = 25200;
+int sunset = 82800;
+
+bool light_manual_off = false;
+bool light_manual_on = false;
+
 void setup()
 {
     Serial.begin(9600);
     dht.begin();
+    txrx23.begin(9600);
 }
 
 //todo read time that is set for mcu
@@ -34,8 +46,9 @@ void loop(void) {
     time(&now);
     timeinfo = localtime(&now);    
     Serial.println(timeinfo->tm_hour);
-    
-    int time_in_s = timeinfo->tm_hour * timeinfo->tm_min * timeinfo->tm_sec;
+
+    //convert to seconds
+    int time_in_s = (timeinfo->tm_hour * 60 * 60) + (timeinfo->tm_min * 60) + timeinfo->tm_sec;
     
     // current limitation    that start time is always less than stop time 
     // start 16:00, stop 02:00 is not allowed
@@ -54,7 +67,7 @@ void loop(void) {
     if (timer == 90 ||
         temp > max_temp ||
         hum > max_humid) {
-            turn_fan_on();
+            //turn_fan_on();
             timer = 0;
             triger = true;
             timer_off = 0;            
@@ -66,7 +79,7 @@ void loop(void) {
     
     // after we enable fan we will give it to work at least 15 min to have system stability
     if (timer_off == 15) {
-        turn_fan_off();
+        //turn_fan_off();
         timer_off = 0;
         triger = false;
         timer = 0;
@@ -75,12 +88,14 @@ void loop(void) {
     // send data only once per hour
     // todo maybe send every 10 min
     //if (counter == 60) {
-    if (counter == 6) {
-        moist1 = get_moisture(A0) // read data from analog port A0
+    if (counter == 3) {
+        int moist1 = get_moisture(A0); // read data from analog port A0
         counter = 0;
         send_to_mcu(hum, temp, moist1);       
     }
-    delay(6000);
+    counter++;
+    timer++;
+    delay(5000);
     //delay(60000); // wait 1 min  //todo check buffer size when communicate
 }
 
@@ -92,16 +107,13 @@ void send_to_mcu(float hum, float temp, int moist1) {
     conditions["moist1"] = moist1;
     
     // send data to NodeMCU
-    if(txrx23.available() == 0){
-        serializeJsonPretty(conditions, txrx23);
-        Serial.println("Data sent to MCU");
-    } else {
-        Serial.println("NodeMCU is unavailable");
-    }
+    serializeJsonPretty(conditions, txrx23);
+    Serial.println("Data sent to MCU");
 }
 
-void get_moisture(const port) {
+int get_moisture(const uint8_t port) {
     // definition of data for moisture sensor, collibrate analog data to RH
+    // to defind port as argument need "const uint8_t" type
     int water = 1900;  // totally wet, sensor was in water
     int air = 3600;  // totally dry, sensor was in air
     int rh = (air - water)/100;
