@@ -367,7 +367,6 @@ a:hover, a:active, a:focus {
 }
 
 
-
 /*---------------------------------------
    Control section              
 -----------------------------------------*/
@@ -393,8 +392,26 @@ a:hover, a:active, a:focus {
    Contact section              
 -----------------------------------------*/
 
+/* image for temp/humid/sunrise */
+#contact .col-md-1 {
+  padding-left: 10px;
+  padding-right: 0px;
+  width: 70px;
+}
+
+#contact .col-md-offset-3 {
+  margin-left: 20%;
+}
+
+
+#contact .col-md-offset-4 {
+  margin-left: 35%;
+}
+
+
 #contact .col-md-4 {
   padding-left: 0px;
+  padding-right: 0px;
 }
 
 #contact .col-md-12 {
@@ -701,7 +718,7 @@ footer .footer-copyright {
   .main-single-post,  
   .main-browser,
   .main-contact {
-    height: 35vh;
+    height: 15vh;
   }
 
 }
