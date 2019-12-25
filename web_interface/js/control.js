@@ -62,14 +62,13 @@ $('#sync_time').click(function(e){
     }
 });      
 
-// called to show current settings
-$('#show_settings').click(function(e){
-    e.preventDefault();
+// called to prefill current settings
+window.onload = function() {
     var content = get_file_content('Control_Settings.txt');
     if (content != false) {
         alert(content);
     }
-});  
+};
 
 
 function get_file_content(file_name) {
