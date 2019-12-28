@@ -438,6 +438,13 @@ a:hover, a:active, a:focus {
   height: 50px;
 }
 
+/* style for drop down menu */
+#contact select {
+  height: 50px;
+  width: 100%;
+  border: 2px solid #f0f0f0;
+}
+
 #contact input[type="submit"] {
   background: #bfba55;
   border-radius: 100px;
