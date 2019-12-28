@@ -191,7 +191,10 @@ function get_radio_value(element_dict) {
 // called to sync time
 $('#sync_time').click(function(e){
     e.preventDefault();
-    $.post('/sync_time');
+
+    var time_zone = document.getElementById("time_zone_selector").value;
+    $.post('/sync_time?time_zone=' + time_zone);
+
     var content = get_file_content('Server_Time.txt');
     if (content != false) {
         
@@ -214,7 +217,7 @@ Number.prototype.toHHMMSS = function () {
 
 // called to prefill current settings
 window.onload = function() {
-  set_selector();
+    set_selector();
 
     var content = get_file_content('Control_Settings.txt');
     if (content != false) {
@@ -281,6 +284,7 @@ function get_file_content(file_name) {
     }
 }
 
+// set drop down menu with time zones
 function set_selector(){
   var str = "";
   for (var key in time_zone_dict){
