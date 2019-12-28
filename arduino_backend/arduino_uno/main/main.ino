@@ -40,6 +40,11 @@ void setup()
 //todo read time that is set for mcu
 
 void loop(void) {    
+    // get system settings from NodeMCU
+    // use of available to check if there is any data in buffer. DO NOT use it for sending info
+    if (rxtx.available() > 0){
+      read_json();
+    }
     // get current system wake up time
     unsigned long current_millis = millis();
 
@@ -159,6 +164,16 @@ dht_struct get_dht_data(){
     dht_vals.temp_min = min(dht_vals.temp1, dht_vals.temp2);
     dht_vals.hum_min = min(dht_vals.hum1, dht_vals.hum2);
     
-
   return dht_vals;
+}
+
+void read_json() {
+  StaticJsonDocument<300> json_doc;
+  DeserializationError error = deserializeJson(json_doc, rxtx);
+  if (!error){
+        serializeJsonPretty(json_doc, Serial);
+        Serial.println("JSON received and parsed");
+  } else {
+    Serial.println("Error");
+  }
 }
