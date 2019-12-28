@@ -78,16 +78,22 @@ void change_settings() {
 
 void sync_time() {
   // function to update the time on Arduino by button click and to popup message box on HTML page
-  WiFiClient client = server.client();
+  float time_zone = 2.0; // default time zone GMT+2
+ 
+  if (server.arg("time_zone")!= ""){
+    Serial.println("time_zone: " + server.arg("time_zone"));
+    time_zone = server.arg("time_zone").toFloat();
+  }
+  
   // void configTime(int timezone, int daylightOffset_sec, const char* server1, const char* server2, const char* server3
-  configTime(2 * 3600, 0, "0.de.pool.ntp.org", "1.de.pool.ntp.org");
+  configTime( int(time_zone * 3600), 0, "0.de.pool.ntp.org", "1.de.pool.ntp.org");
   Serial.println("\nWaiting for time");
   while (!time(nullptr)) {
     Serial.print(".");
     delay(1000);
   }
-  Serial.println("");
-  time_t now; 
+  delay(1500);  // need delay to sync with server
+  time_t now = time(nullptr);; 
   Serial.println(ctime(&now));
 
   server_time_file = SD.open("Server_Time.txt", O_READ | O_WRITE | O_CREAT);
