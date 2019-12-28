@@ -1,16 +1,9 @@
 /*
-  SDWebServer - Example WebServer with SD Card backend for esp8266
-
-  Copyright (c) 2015 Hristo Gochkov. All rights reserved.
-  This file is part of the ESP8266WebServer library for Arduino environment.
-
   Have a FAT Formatted SD Card connected to the SPI port of the ESP8266
   The web root is the SD Card root folder
   File extensions with more than 3 charecters are not supported by the SD Library
-  File Names longer than 8 charecters will be truncated by the SD library, so keep filenames shorter
-  index.htm is the default index (works on subfolders as well)
+  File Names longer than 8 charecters will be truncated by the SD library
 
-  upload the contents of SdRoot to the root of the SDcard and access the editor by going to http://esp8266sd.local/edit
 */
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
@@ -19,6 +12,8 @@
 #include <SPI.h>
 #include <SD.h>
 #include <time.h>
+#include <SoftwareSerial.h>
+#include <ArduinoJson.h>
 
 #define DBG_OUTPUT_PORT Serial
 
@@ -27,9 +22,15 @@
 #define STAPSK  "boro1812"
 #endif
 
+SoftwareSerial rxtx(D1, D0);
+StaticJsonDocument<300> settings;
+
 const char* ssid = STASSID;
 const char* password = STAPSK;
 const char* host = "esp8266sd";
+
+const long send_data_every = 1800000; // send settings to UNO every 30min
+unsigned long previous_sent_timer = 0; // timer to count when we send data to UNO
 
 ESP8266WebServer server(80);
 
@@ -250,6 +251,9 @@ void handleNotFound() {
 }
 
 void setup(void) {
+  // enable communication with Uno
+  rxtx.begin(9600);
+  
   DBG_OUTPUT_PORT.begin(115200);
   DBG_OUTPUT_PORT.setDebugOutput(true);
   DBG_OUTPUT_PORT.print("\n");
@@ -301,6 +305,31 @@ void setup(void) {
 }
 
 void loop(void) {
+  unsigned long current_millis = millis();
+  
   server.handleClient();
   MDNS.update();
+
+  // read data from Arduino Uno
+  if (rxtx.available() > 0){
+    read_json();
+  }
+
+  if (current_millis - previous_sent_timer >= send_data_every) {
+        previous_sent_timer = current_millis;
+        serializeJsonPretty(settings, rxtx);
+        Serial.println("Settings sent to UNO");
+  }
+}
+
+void read_json() {
+  
+  StaticJsonDocument<200> json_doc;
+  DeserializationError error = deserializeJson(json_doc, rxtx);
+  if (!error){
+        serializeJsonPretty(json_doc, Serial);
+        Serial.println("JSON received and parsed");
+  } else {
+    Serial.println("Error");
+  }
 }
