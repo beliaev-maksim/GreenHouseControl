@@ -2,8 +2,8 @@ var min_temp, max_temp;
 var min_humidity, max_humidity;
 var sunrise, sunset;
 
-var light_setting;
-var fan_setting;
+var light_mode;
+var fan_mode;
 
 var fan_dict = {
   "fan_off": 0,
@@ -112,10 +112,10 @@ $('#submit').click(function(e){
     sunset = $('#sunset').val();
 
 
-    fan_setting = get_radio_value(fan_dict);
-    light_setting = get_radio_value(light_dict);   
+    fan_mode = get_radio_value(fan_dict);
+    light_mode = get_radio_value(light_dict);   
 
-    if (fan_setting == "fan_auto") {
+    if (fan_mode == "fan_auto") {
       // check settings only if Auto mode
       if (min_temp == "" || min_temp > max_temp || min_temp < 0) {
           return alert("Minimum temperature cannot be empty, negative or greater than Maximum temperature");
@@ -134,7 +134,7 @@ $('#submit').click(function(e){
       }
     }
     
-    if (light_setting == "light_auto"){
+    if (light_mode == "light_auto"){
       if (sunrise == "" || sunrise < 0) {
           return alert("Sunrise cannot be empty or negative");
       } else {
@@ -162,8 +162,8 @@ $('#submit').click(function(e){
         '&max_humidity=' + max_humidity + 
         '&sunrise_in_s=' + sunrise_in_s + 
         '&sunset_in_s=' + sunset_in_s +
-        '&fan_setting=' + fan_dict[fan_setting] +
-        '&light_setting=' + light_dict[light_setting], function(data){
+        '&fan_mode=' + fan_dict[fan_mode] +
+        '&light_mode=' + light_dict[light_mode], function(data){
                                     console.log(data);
                                 });
 });      
@@ -181,11 +181,11 @@ function get_radio_value(element_dict) {
 // called when auto/manual settings are switched
 // may be uncommented if needed
 // $('input[name="fan_options"]').change(function(e){
-//     fan_setting = e.currentTarget.attributes.id.nodeValue;
+//     fan_mode = e.currentTarget.attributes.id.nodeValue;
 // });  
 
 // $('input[name="light_options"]').change(function(e){
-//     light_setting = e.currentTarget.attributes.id.nodeValue;
+//     light_mode = e.currentTarget.attributes.id.nodeValue;
 // });  
 
 // called to sync time
@@ -237,7 +237,7 @@ window.onload = function() {
         document.getElementById("light_on").parentElement.classList.remove('active');
         
         var id;
-        switch(settings.fan_setting){
+        switch(settings.fan_mode){
           case 0: 
             id = 'fan_off';
             break;
@@ -250,7 +250,7 @@ window.onload = function() {
         }
         document.getElementById(id).parentElement.classList.add('active');
         
-        switch(settings.light_setting){
+        switch(settings.light_mode){
           case 0: 
             id = 'light_off';
             break;

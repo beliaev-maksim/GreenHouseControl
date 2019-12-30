@@ -1,0 +1,13 @@
+1) JSON
+The result can be false for three reasons:
+
+-the JSON string has invalid syntax;
+-the JSON string doesn’t represent an object;
+-the StaticJsonBuffer is too small – use https://arduinojson.org/v6/assistant/ to compute the buffer size.
+
+2) Relay: NO or NC
+
+Normally open (NO) contacts are used in the design of control and signaling circuits. A normally closed (NC) one is designed for alarms, independent power supplies and interlock circuits.
+
+3) pins
+On  Uno, don't use pin 0 or 1, and avoid pin 13. These are reserved to write a sketch

@@ -5,6 +5,9 @@
 #define RXPIN 2         // rxPin: the pin on which to receive serial data 
 #define TXPIN 3         // txPin: the pin on which to transmit serial data 
 
+#define LIGHTPIN 10     // pin for relay, light
+#define FANPIN 11       // pin for relay, fan
+
 const uint8_t moisture_sens1_pin = A0; // set analog pin for moisture sensor
 const uint8_t moisture_sens2_pin = A1; // set analog pin for moisture sensor
 const uint8_t moisture_sens3_pinin = A2; // set analog pin for moisture sensor
@@ -21,12 +24,12 @@ const long fan_on_time = 900000; // fan will be ON during this time frame
 
 // default values
 
-int max_humid = 65;
-int min_humid = 30;
-int max_temp = 25;
-int min_temp = 15;
-int sunrise = 25200;
-int sunset = 82800;
+float max_humid = 65.0;
+float min_humid = 30.0;
+float max_temp = 25.0;
+float min_temp = 15.0;
+unsigned long sunrise = 25200;
+unsigned long sunset = 82800;
 
-bool light_manual_off = false;
-bool light_manual_on = false;
+int light_mode = 2;
+int fan_mode = 2;
