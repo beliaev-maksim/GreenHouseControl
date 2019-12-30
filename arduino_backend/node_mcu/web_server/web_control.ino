@@ -12,6 +12,10 @@ uint8_t const O_TRUNC = 0X40;
 
 void change_settings() {
   // function called when you click Set button on Control web page
+  time_t now = time(nullptr);
+  settings["generated_time"] = ctime(&now);
+  settings["server_time"] = now;
+  
   if (server.arg("min_temp")!= ""){
     Serial.println("min_temp: " + server.arg("min_temp"));
     settings["min_temp"] = server.arg("min_temp").toFloat();
@@ -42,18 +46,15 @@ void change_settings() {
     settings["sunset_in_s"] = server.arg("sunset_in_s").toInt();
   }
 
-  if (server.arg("fan_setting")!= ""){
-    Serial.println("fan_setting: " + server.arg("fan_setting"));
-    settings["fan_setting"] = server.arg("fan_setting").toInt();
+  if (server.arg("fan_mode")!= ""){
+    Serial.println("fan_mode: " + server.arg("fan_mode"));
+    settings["fan_mode"] = server.arg("fan_mode").toInt();
   }
 
-  if (server.arg("light_setting")!= ""){
-    Serial.println("light_setting: " + server.arg("light_setting"));
-    settings["light_setting"] = server.arg("light_setting").toInt();
+  if (server.arg("light_mode")!= ""){
+    Serial.println("light_mode: " + server.arg("light_mode"));
+    settings["light_mode"] = server.arg("light_mode").toInt();
   }
-
-  time_t now = time(nullptr);
-  settings["generated_time"] = ctime(&now);
 
   // write all new setting on SD card
   // open the file. note that only one file can be open at a time,
@@ -95,6 +96,7 @@ void sync_time() {
   delay(1500);  // need delay to sync with server
   time_t now = time(nullptr);; 
   Serial.println(ctime(&now));
+  Serial.println(now);
 
   server_time_file = SD.open("Server_Time.txt", O_READ | O_WRITE | O_CREAT);
   if (server_time_file) {
@@ -102,4 +104,8 @@ void sync_time() {
     server_time_file.println(ctime(&now));
     server_time_file.close();
   }
+
+  settings["server_time"] = now;
+  // send data to arduino UNO
+  serializeJsonPretty(settings, rxtx);
 }
