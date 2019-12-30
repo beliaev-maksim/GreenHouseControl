@@ -20,6 +20,9 @@ unsigned long previous_millis = 0;
 unsigned long previous_sent_timer = 0; // timer to count when we send data to MCU
 unsigned long previous_dht_read = 0; // timer to count when we send data to MCU
 
+// variable for server time in seconds
+time_t server_time = 0; 
+
 // define structure for data from  DHT sensors
 typedef struct
  {
@@ -35,6 +38,10 @@ void setup()
     dht1.begin();
     dht2.begin();
     rxtx.begin(9600);
+
+    // relay
+    pinMode(LIGHTPIN, OUTPUT);
+    pinMode(FANPIN, OUTPUT);
 }
 
 //todo read time that is set for mcu
@@ -48,16 +55,20 @@ void loop(void) {
     // get current system wake up time
     unsigned long current_millis = millis();
 
-    //convert to seconds
-    int time_in_s = (hour() * 60 * 60) + (minute() * 60) + second();
-    
-    // current limitation    that start time is always less than stop time 
-    // start 16:00, stop 02:00 is not allowed
-    if (light_manual_on == true || 
-        (sunrise < time_in_s < sunset && light_manual_off != true)) {
-            int a = 1; //turn_light_on();  // todo
+    //convert to seconds,do not forget to convert numbers to unsigned long
+    unsigned long time_in_s = (unsigned long) 3600 * hour() + (unsigned long) 60 * minute() + second();     
+        
+    if (light_mode == 1 ||
+        (light_mode == 2 && 
+          (sunrise < time_in_s && time_in_s < sunset)
+         )
+       ) {
+      // auto mode
+      // current limitation    that start time is always less than stop time 
+      // start 16:00, stop 02:00 is not allowed
+        digitalWrite(LIGHTPIN, HIGH); 
     } else {
-            int a = 1; //turn_light_off();
+        digitalWrite(LIGHTPIN, LOW); 
     }
     
     //Stores humidity and temperature value from DHT sensor, read values every 10s
@@ -68,19 +79,26 @@ void loop(void) {
     }
 
     // todo need to read min max for temp and humid values from MCU
-    if (current_millis - previous_millis >= enable_fan_every ||
-        dht_vals.temp_max > max_temp ||
-        dht_vals.hum_max > max_humid) {
-            previous_millis = current_millis;
-            //turn_fan_on();     
-    }
-
-    // after we enable fan we will give it to work at least 15 min to have system stability
-    if (current_millis - previous_millis >= fan_on_time ||
-        dht_vals.temp_min < min_temp ||
-        dht_vals.hum_min < min_humid) {
-        //turn_fan_off();
-        int b = 4;
+    if (fan_mode == 2) {
+      // auto mode
+      if (current_millis - previous_millis >= enable_fan_every ||
+          dht_vals.temp_max > max_temp ||
+          dht_vals.hum_max > max_humid) {
+          previous_millis = current_millis;
+          digitalWrite(FANPIN, HIGH);     
+      }
+  
+      // after we enable fan we will give it to work at least 15 min to have system stability
+      if (current_millis - previous_millis >= fan_on_time ||
+          dht_vals.temp_min < min_temp ||
+          dht_vals.hum_min < min_humid) {
+          digitalWrite(FANPIN, LOW); 
+      }
+    } else if (fan_mode == 1) {
+        // ON mode
+        digitalWrite(FANPIN, HIGH);  
+    } else {
+        digitalWrite(FANPIN, LOW); 
     }
     
     // send data only once per hour
@@ -173,6 +191,21 @@ void read_json() {
   if (!error){
         serializeJsonPretty(json_doc, Serial);
         Serial.println("JSON received and parsed");
+
+        fan_mode = json_doc["fan_mode"];
+        light_mode = json_doc["light_mode"];
+
+        min_humid = json_doc["min_humidity"];
+        max_humid = json_doc["max_humidity"];
+
+        min_temp = json_doc["min_temp"];
+        max_temp = json_doc["max_temp"];
+        
+        sunrise = json_doc["sunrise_in_s"];
+        sunset = json_doc["sunset_in_s"];
+
+        server_time = json_doc["server_time"];
+        setTime(server_time);     
   } else {
     Serial.println("Error");
   }
