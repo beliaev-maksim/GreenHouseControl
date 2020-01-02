@@ -300,6 +300,7 @@ function createFileUploader(element, tree, editor){
       if(typeof ext !== undefined){
         switch(ext){
           case "txt":
+          case "json":
           case "htm":
           case "js":
           case "c":
@@ -400,11 +401,11 @@ function createFileUploader(element, tree, editor){
           case "js": lang = "javascript"; break;
           case "c": lang = "c_cpp"; break;
           case "cpp": lang = "c_cpp"; break;
+          case "json": lang = "plain"; break;
           case "css":
           case "scss":
           case "php":
           case "html":
-          case "json":
           case "xml":
             lang = ext;
         }
