@@ -106,18 +106,23 @@ void loop(void) {
     if (current_millis - previous_sent_timer >= send_data_every) {
         previous_sent_timer = current_millis;
         int moist1 = get_moisture(moisture_sens1_pin);
-        send_to_mcu(dht_vals, moist1);       
+        int moist2 = get_moisture(moisture_sens2_pin);
+        int moist3 = get_moisture(moisture_sens3_pin);
+        
+        send_to_mcu(dht_vals, moist1, moist2, moist3);       
     }
 }
 
-void send_to_mcu(dht_struct dht_vals, int moist1) {
+void send_to_mcu(dht_struct dht_vals, int moist1, int moist2, int moist3) {
     // create JSON for sensor data
-    StaticJsonDocument<200> conditions;
+    StaticJsonDocument<350> conditions;
     conditions["hum1"] = dht_vals.hum1;
     conditions["temp1"] = dht_vals.temp1;
     conditions["hum2"] = dht_vals.hum2;
     conditions["temp2"] = dht_vals.temp2;
     conditions["moist1"] = moist1;
+    conditions["moist2"] = moist2;
+    conditions["moist3"] = moist3;
     
     // send data to NodeMCU
     serializeJsonPretty(conditions, rxtx);
