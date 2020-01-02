@@ -42,6 +42,8 @@ void setup()
     // relay
     pinMode(LIGHTPIN, OUTPUT);
     pinMode(FANPIN, OUTPUT);
+
+    request_settings();
 }
 
 //todo read time that is set for mcu
@@ -129,6 +131,16 @@ void send_to_mcu(dht_struct dht_vals, int moist1, int moist2, int moist3) {
     Serial.println("Data sent to MCU");
 }
 
+void request_settings(){
+    // function to request MCU to send settings, after reboot or power off
+    StaticJsonDocument<100> reqs;
+    reqs["give_me"] = 1;
+
+    // send data to NodeMCU
+    serializeJsonPretty(reqs, rxtx);
+    Serial.println("Settings are requested from MCU");
+}
+
 int get_moisture(const uint8_t port) {
     // definition of data for moisture sensor, collibrate analog data to RH
     // to defind port as argument need "const uint8_t" type
@@ -172,8 +184,8 @@ dht_struct get_dht_data(){
     dht_vals.hum2 = dht2.readHumidity();
     dht_vals.temp2 = dht2.readTemperature();
 
-    // sensor is showing less value compared to other 3 hygrometers. Add 15% to balance
-    dht_vals.hum2 *= 1.15; 
+    // sensor is showing less value compared to other 3 hygrometers. Add 13% to balance
+    dht_vals.hum2 *= 1.13; 
 
   // evaluate min and max values
     dht_vals.temp_max = max(dht_vals.temp1, dht_vals.temp2);
