@@ -2,6 +2,18 @@ $("#date_selector").change(function(e){
   file_name = $("#date_selector").val();
 
   data = get_file_content("/stats/" + file_name + ".txt");
+  labels = JSON.parse(get_file_content("sensors.json"));
+
+  if (!data) return;
+  if (!labels) {
+    labels = {
+      "dht_sensor_1": "dht_sensor_1",
+      "dht_sensor_2": "dht_sensor_2",
+      "moisture_sensor_1": "moisture_sensor_1",
+      "moisture_sensor_2": "moisture_sensor_2",
+      "moisture_sensor_3": "moisture_sensor_3"
+    }
+  }
 
   data_array = data.split("\n");
   temp1 = [];
@@ -34,12 +46,12 @@ $("#date_selector").change(function(e){
         labels: date_time,
         datasets: [{ 
             data: temp1,
-            label: "Sensor1",
+            label: labels["dht_sensor_1"],
             borderColor: "#3e95cd",
             fill: false
           }, { 
             data: temp2,
-            label: "Sensor2",
+            label: labels["dht_sensor_2"],
             borderColor: "#8e5ea2",
             fill: false
           }
@@ -59,12 +71,12 @@ $("#date_selector").change(function(e){
         labels: date_time,
         datasets: [{ 
             data: humidity1,
-            label: "Sensor1",
+            label: labels["dht_sensor_1"],
             borderColor: "#3e95cd",
             fill: false
           }, { 
             data: humidity2,
-            label: "Sensor2",
+            label: labels["dht_sensor_2"],
             borderColor: "#8e5ea2",
             fill: false
           }
@@ -84,17 +96,17 @@ $("#date_selector").change(function(e){
         labels: date_time,
         datasets: [{ 
             data: moisture1,
-            label: "Sensor1",
+            label: labels["moisture_sensor_1"],
             borderColor: "#3e95cd",
             fill: false
           }, { 
             data: moisture2,
-            label: "Sensor2",
+            label: labels["moisture_sensor_2"],
             borderColor: "#8e5ea2",
             fill: false
           }, { 
             data: moisture3,
-            label: "Sensor3",
+            label: labels["moisture_sensor_3"],
             borderColor: "#044715",
             fill: false
           }
