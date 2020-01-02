@@ -161,25 +161,19 @@ int get_moisture(const uint8_t port) {
 dht_struct get_dht_data(){
   // function to calculate AVG from multiple measurments from two sensors
   // should be defined as dht_struct type to be assigned later to a dht_vals structure
+  // dht sensors can read data once per 2s, not more
   
   // initialize new structure and all members as zeros
-  dht_struct dht_vals = {0, 0, 0, 0, 0, 0, 0, 0};
+    dht_struct dht_vals = {0, 0, 0, 0, 0, 0, 0, 0};
 
-  // make 100 samples of data every 1ms
-  for (int i = 0; i <= 100; i++) { 
-      dht_vals.hum1 += dht1.readHumidity();
-      dht_vals.temp1 += dht1.readTemperature();
-    
-      dht_vals.hum2 += dht2.readHumidity();
-      dht_vals.temp2 += dht2.readTemperature();
-      delay(1); 
-  } 
+    dht_vals.hum1 = dht1.readHumidity();
+    dht_vals.temp1 = dht1.readTemperature();
+  
+    dht_vals.hum2 = dht2.readHumidity();
+    dht_vals.temp2 = dht2.readTemperature();
 
-    // get average value of data
-    dht_vals.hum1  /= 100.0; 
-    dht_vals.temp1  /= 100.0; 
-    dht_vals.hum2  /= 100.0; 
-    dht_vals.temp2  /= 100.0; 
+    // sensor is showing less value compared to other 3 hygrometers. Add 15% to balance
+    dht_vals.hum2 *= 1.15; 
 
   // evaluate min and max values
     dht_vals.temp_max = max(dht_vals.temp1, dht_vals.temp2);

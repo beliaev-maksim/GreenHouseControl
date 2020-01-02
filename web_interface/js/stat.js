@@ -156,7 +156,7 @@ function get_file_content(file_name) {
 function set_selector(files){
   var str = "";
 
-  for (i in files){
+  for (i in files.reverse()){
     if (files[i].type == "file") {
       name = files[i].name.slice(0, -4);
       str += '<option value="' + name + '">' + name + '</option>';
