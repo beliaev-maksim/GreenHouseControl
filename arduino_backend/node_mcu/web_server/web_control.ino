@@ -115,6 +115,12 @@ void sync_time() {
 int read_json() {
   // function to create file with stats
   StaticJsonDocument<350> json_doc; 
+
+  if (json_doc["give_me"] == 1){
+    serializeJsonPretty(settings, rxtx);
+    return 1;
+  }
+  
   String file_name = "stats/" + get_date();
   String current_hour = get_time();
   String header_line = "Time\tHumidity1\tTemperature1\tHumidity2\tTemperature2\tMoisture1\tMoisture2\tMoisture3";
