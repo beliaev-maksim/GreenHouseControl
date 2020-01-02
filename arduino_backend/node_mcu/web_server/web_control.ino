@@ -14,6 +14,9 @@ uint8_t const O_APPEND = 0X04;
 uint8_t const O_CREAT = 0X10;
 uint8_t const O_TRUNC = 0X40;
 
+// default time zone GMT+2
+void sync_time(float time_zone = 2.0);
+
 void change_settings() {
   // function called when you click Set button on Control web page
   time_t now = time(nullptr);
@@ -81,9 +84,8 @@ void change_settings() {
 }
 
 // todo sync time on start
-void sync_time() {
+void sync_time(float time_zone = 2.0) {
   // function to update the time on Arduino by button click and to popup message box on HTML page
-  float time_zone = 2.0; // default time zone GMT+2
  
   if (server.arg("time_zone")!= ""){
     Serial.println("time_zone: " + server.arg("time_zone"));
@@ -91,8 +93,7 @@ void sync_time() {
   }
   
   // void configTime(int timezone, int daylightOffset_sec, const char* server1, const char* server2, const char* server3
-  configTime( int(time_zone * 3600), 0, "0.de.pool.ntp.org", "1.de.pool.ntp.org");
-  Serial.println("\nWaiting for time");
+  configTime(int(time_zone * 3600), 0, "0.de.pool.ntp.org", "1.de.pool.ntp.org");
   while (!time(nullptr)) {
     Serial.print(".");
     delay(1000);
@@ -100,12 +101,17 @@ void sync_time() {
   delay(1500);  // need delay to sync with server
   time_t now = time(nullptr);; 
 
-  server_time_file = SD.open("Server_Time.txt", O_READ | O_WRITE | O_CREAT);
-  if (server_time_file) {
-    server_time_file.print("Time on the server is: ");
-    server_time_file.println(ctime(&now));
-    server_time_file.close();
+  if (server.arg("time_zone")!= ""){
+      String output = "Time on the server is: " + ctime(&now);
+      server.sendContent(output);
   }
+  
+//  server_time_file = SD.open("Server_Time.txt", O_READ | O_WRITE | O_CREAT);
+//  if (server_time_file) {
+//    server_time_file.print("Time on the server is: ");
+//    server_time_file.println(ctime(&now));
+//    server_time_file.close();
+//  }
 
   settings["server_time"] = now;
   // send data to arduino UNO
