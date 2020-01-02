@@ -321,15 +321,3 @@ void loop(void) {
         Serial.println("Settings sent to UNO");
   }
 }
-
-void read_json() {
-  
-  StaticJsonDocument<200> json_doc;
-  DeserializationError error = deserializeJson(json_doc, rxtx);
-  if (!error){
-        serializeJsonPretty(json_doc, Serial);
-        Serial.println("JSON received and parsed");
-  } else {
-    Serial.println("Error");
-  }
-}
