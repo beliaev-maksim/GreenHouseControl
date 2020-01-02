@@ -439,7 +439,7 @@ a:hover, a:active, a:focus {
 }
 
 /* style for drop down menu */
-#contact select {
+#contact, #plots select {
   height: 50px;
   width: 100%;
   border: 2px solid #f0f0f0;
