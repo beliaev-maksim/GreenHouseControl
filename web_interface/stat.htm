@@ -63,10 +63,15 @@
 </section>
 
 <section id="plots">
+     <div class="col-md-offset-3 col-md-6 col-sm-12">
+          <div class="col-md-offset-4 col-md-4 col-sm-6">
+               <select id="date_selector"></select>
+          </div>
+     </div>
      <div class="row">
           <div class="col-md-offset-2 col-md-9 col-sm-12">
                <div id="canvas-holder" class="col-md-10 col-sm-12">
-                    <canvas id="line-chart" width="800" height="450"></canvas>    
+                    <canvas id="temperature_chart" width="800" height="450"></canvas>    
                </div>
           </div>
      </div>
@@ -74,7 +79,15 @@
      <div class="row">         
           <div class="col-md-offset-2 col-md-9 col-sm-12">
                <div id="canvas-holder" class="col-md-10 col-sm-12">
-                    <canvas id="line-chart2" width="800" height="450"></canvas>    
+                    <canvas id="humidity_chart" width="800" height="450"></canvas>    
+               </div>
+          </div>
+     </div>
+     <hr style="border-width: 10px;">
+     <div class="row">         
+          <div class="col-md-offset-2 col-md-9 col-sm-12">
+               <div id="canvas-holder" class="col-md-10 col-sm-12">
+                    <canvas id="moisture_chart" width="800" height="450"></canvas>    
                </div>
           </div>
      </div>

@@ -1,68 +1,139 @@
-data = get_file_content("/data/2019-06.txt");
+$("#date_selector").change(function(e){
+  file_name = $("#date_selector").val();
 
-data_array = data.split("\n");
-temp1 = [];
-humidity1 = [];
-date_time = [];
-for(var i in data_array) {
-  if (i == 0) continue;
-  time_point = data_array[i].split("\t");
-  temp1.push(time_point[2]);
-  humidity1.push(time_point[3]);
-  date_time.push(time_point[0] + "\t" + time_point[1])
-};
+  data = get_file_content("/stats/" + file_name + ".txt");
+  labels = JSON.parse(get_file_content("sensors.json"));
 
-new Chart(document.getElementById("line-chart"), {
-    type: 'line',
-    data: {
-      labels: date_time,
-      datasets: [{ 
-          data: temp1,
-          label: "Sensor1",
-          borderColor: "#3e95cd",
-          fill: false
-        }, { 
-          data: temp1,
-          label: "Sensor2",
-          borderColor: "#8e5ea2",
-          fill: false
-        }
-      ]
-    },
-    options: {
-      title: {
-        display: true,
-        text: 'Temperature'
-      }
+  if (!data) return;
+  if (!labels) {
+    labels = {
+      "dht_sensor_1": "dht_sensor_1",
+      "dht_sensor_2": "dht_sensor_2",
+      "moisture_sensor_1": "moisture_sensor_1",
+      "moisture_sensor_2": "moisture_sensor_2",
+      "moisture_sensor_3": "moisture_sensor_3"
     }
-  });
+  }
 
-  new Chart(document.getElementById("line-chart2"), {
-    type: 'line',
-    data: {
-      labels: date_time,
-      datasets: [{ 
-          data: humidity1,
-          label: "Sensor1",
-          borderColor: "#3e95cd",
-          fill: false
-        }, { 
-          data: humidity1,
-          label: "Sensor2",
-          borderColor: "#8e5ea2",
-          fill: false
+  data_array = data.split("\n");
+  temp1 = [];
+  humidity1 = [];
+  temp2 = [];
+  humidity2 = [];
+  moisture1 = [];
+  moisture2 = [];
+  moisture3 = [];
+  date_time = [];
+
+  for(var i in data_array) {
+    time_point = data_array[i].split("\t");
+    if (time_point[0] == "Time") continue; //header
+    date_time.push(time_point[0])
+    temp1.push(time_point[2]);
+    humidity1.push(time_point[1]);
+
+    temp2.push(time_point[4]);
+    humidity2.push(time_point[3]);
+
+    moisture1.push(time_point[5]);
+    moisture2.push(time_point[6]);
+    moisture3.push(time_point[7]);   
+  };
+
+  new Chart(document.getElementById("temperature_chart"), {
+      type: 'line',
+      data: {
+        labels: date_time,
+        datasets: [{ 
+            data: temp1,
+            label: labels["dht_sensor_1"],
+            borderColor: "#3e95cd",
+            fill: false
+          }, { 
+            data: temp2,
+            label: labels["dht_sensor_2"],
+            borderColor: "#8e5ea2",
+            fill: false
+          }
+        ]
+      },
+      options: {
+        title: {
+          display: true,
+          text: 'Temperature'
         }
-      ]
-    },
-    options: {
-      title: {
-        display: true,
-        text: 'Humidity'
       }
-    }
-  });
-  
-  
+    });
+
+    new Chart(document.getElementById("humidity_chart"), {
+      type: 'line',
+      data: {
+        labels: date_time,
+        datasets: [{ 
+            data: humidity1,
+            label: labels["dht_sensor_1"],
+            borderColor: "#3e95cd",
+            fill: false
+          }, { 
+            data: humidity2,
+            label: labels["dht_sensor_2"],
+            borderColor: "#8e5ea2",
+            fill: false
+          }
+        ]
+      },
+      options: {
+        title: {
+          display: true,
+          text: 'Humidity'
+        }
+      }
+    });
+
+    new Chart(document.getElementById("moisture_chart"), {
+      type: 'line',
+      data: {
+        labels: date_time,
+        datasets: [{ 
+            data: moisture1,
+            label: labels["moisture_sensor_1"],
+            borderColor: "#3e95cd",
+            fill: false
+          }, { 
+            data: moisture2,
+            label: labels["moisture_sensor_2"],
+            borderColor: "#8e5ea2",
+            fill: false
+          }, { 
+            data: moisture3,
+            label: labels["moisture_sensor_3"],
+            borderColor: "#044715",
+            fill: false
+          }
+        ]
+      },
+      options: {
+        title: {
+          display: true,
+          text: 'Moisture'
+        }
+      }
+    });
+});   
+
+window.onload = function() {
+    // get the list of files and creates drop down
+    xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function () {
+        if(xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+            files = JSON.parse(xhr.responseText);
+            set_selector(files);
+        };
+    };
+    xhr.open("GET", "/list?dir=/stats", true);
+    xhr.send();
+}
+
 
 function get_file_content(file_name) {
     // following code serves to read data from file located on SD card
@@ -79,4 +150,20 @@ function get_file_content(file_name) {
     } else {
         return xhr.responseText;  // return content of a file
     }
+}
+
+// set drop down menu with files in stats folder
+function set_selector(files){
+  var str = "";
+
+  for (i in files){
+    if (files[i].type == "file") {
+      name = files[i].name.slice(0, -4);
+      str += '<option value="' + name + '">' + name + '</option>';
+    }
+  }
+
+  selector = document.getElementById("date_selector");
+  selector.insertAdjacentHTML('beforeend', str);
+  $("#date_selector").val("");
 }

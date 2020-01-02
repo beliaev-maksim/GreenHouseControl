@@ -1,0 +1,7 @@
+{
+    "dht_sensor_1": "Top-Right",
+    "dht_sensor_2": "Bottom-Left",
+    "moisture_sensor_1": "Tomatos",
+    "moisture_sensor_2": "Basilicum",
+    "moisture_sensor_3": "Rose"
+}
