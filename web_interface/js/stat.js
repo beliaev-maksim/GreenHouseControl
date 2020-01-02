@@ -17,18 +17,18 @@ $("#date_selector").change(function(e){
     time_point = data_array[i].split("\t");
     if (time_point[0] == "Time") continue; //header
     date_time.push(time_point[0])
-    temp1.push(time_point[1]);
-    humidity1.push(time_point[2]);
+    temp1.push(time_point[2]);
+    humidity1.push(time_point[1]);
 
-    temp2.push(time_point[3]);
-    humidity2.push(time_point[4]);
+    temp2.push(time_point[4]);
+    humidity2.push(time_point[3]);
 
     moisture1.push(time_point[5]);
     moisture2.push(time_point[6]);
     moisture3.push(time_point[7]);   
   };
 
-  new Chart(document.getElementById("line-chart"), {
+  new Chart(document.getElementById("temperature_chart"), {
       type: 'line',
       data: {
         labels: date_time,
@@ -38,7 +38,7 @@ $("#date_selector").change(function(e){
             borderColor: "#3e95cd",
             fill: false
           }, { 
-            data: temp1,
+            data: temp2,
             label: "Sensor2",
             borderColor: "#8e5ea2",
             fill: false
@@ -53,7 +53,7 @@ $("#date_selector").change(function(e){
       }
     });
 
-    new Chart(document.getElementById("line-chart2"), {
+    new Chart(document.getElementById("humidity_chart"), {
       type: 'line',
       data: {
         labels: date_time,
@@ -63,7 +63,7 @@ $("#date_selector").change(function(e){
             borderColor: "#3e95cd",
             fill: false
           }, { 
-            data: humidity1,
+            data: humidity2,
             label: "Sensor2",
             borderColor: "#8e5ea2",
             fill: false
@@ -74,6 +74,36 @@ $("#date_selector").change(function(e){
         title: {
           display: true,
           text: 'Humidity'
+        }
+      }
+    });
+
+    new Chart(document.getElementById("moisture_chart"), {
+      type: 'line',
+      data: {
+        labels: date_time,
+        datasets: [{ 
+            data: moisture1,
+            label: "Sensor1",
+            borderColor: "#3e95cd",
+            fill: false
+          }, { 
+            data: moisture2,
+            label: "Sensor2",
+            borderColor: "#8e5ea2",
+            fill: false
+          }, { 
+            data: moisture3,
+            label: "Sensor3",
+            borderColor: "#044715",
+            fill: false
+          }
+        ]
+      },
+      options: {
+        title: {
+          display: true,
+          text: 'Moisture'
         }
       }
     });
