@@ -45,7 +45,7 @@ var time_zone_dict = {
   "(GMT-01:00) Cape Verde Is.": "-1",
   "(GMT-01:00) Azores": "-1",
   "(GMT+00:00) Casablanca, Monrovia, Reykjavik": "0",
-  "(GMT+00:00) Greenwich Mean Time : Dublin, Edinburgh, Lisbon, London": "0",
+  "(GMT+00:00) Dublin, Edinburgh, Lisbon, London": "0",
   "(GMT+01:00) Amsterdam, Berlin, Bern, Rome, Stockholm, Vienna": "1",
   "(GMT+01:00) Belgrade, Bratislava, Budapest, Ljubljana, Prague": "1",
   "(GMT+01:00) Brussels, Copenhagen, Madrid, Paris": "1",
@@ -134,25 +134,25 @@ $('#submit').click(function(e){
       }
     }
     
-    if (light_mode == "light_auto"){
-      if (sunrise == "" || sunrise < 0) {
-          return alert("Sunrise cannot be empty or negative");
-      } else {
-        sunrise = sunrise.split(":");
-        var hour = parseInt(sunrise[0]);
-        var minute = parseInt(sunrise[1]);
-        var sunrise_in_s = hour * 60 * 60 + minute * 60;
-      }
+    if (light_mode == "light_auto" && 
+        (sunrise == "" || sunrise < 0)){
+      return alert("Sunrise cannot be empty or negative");
+    } else {
+      sunrise = sunrise.split(":");
+      var hour = parseInt(sunrise[0]);
+      var minute = parseInt(sunrise[1]);
+      var sunrise_in_s = hour * 60 * 60 + minute * 60;
+    }
       
-      if (sunset == "" ||sunset < 0) {
-          return alert("Sunset cannot be empty or negative");
+      if (light_mode == "light_auto" && 
+          (sunset == "" ||sunset < 0)) {
+        return alert("Sunset cannot be empty or negative");
       } else {
         sunset = sunset.split(":");
         hour = parseInt(sunset[0]);
         minute = parseInt(sunset[1]);
         var sunset_in_s = hour * 60 * 60 + minute * 60;
       }
-    }
     
     // use post request instead of get to send data only once
     // see security advantages of POST method
