@@ -16,10 +16,6 @@ uint8_t const O_TRUNC = 0X40;
 
 void change_settings() {
   // function called when you click Set button on Control web page
-  time_t now = time(nullptr);
-  settings["generated_time"] = ctime(&now);
-  settings["server_time"] = now;
-  
   if (server.arg("min_temp")!= ""){
     Serial.println("min_temp: " + server.arg("min_temp"));
     settings["min_temp"] = server.arg("min_temp").toFloat();
@@ -60,6 +56,8 @@ void change_settings() {
     settings["light_mode"] = server.arg("light_mode").toInt();
   }
 
+  sync_time();
+
   // write all new setting on SD card
   // open the file. note that only one file can be open at a time,
   // so you have to close this one before opening another.
@@ -75,38 +73,29 @@ void change_settings() {
     // if the file didn't open, print an error:
     Serial.println("error opening Control_Settings.txt");
   }
-
-  // send data to arduino UNO
-  serializeJsonPretty(settings, rxtx);
 }
 
-// todo sync time on start
 void sync_time() {
-  // function to update the time on Arduino by button click and to popup message box on HTML page
-  float time_zone = 2.0; // default time zone GMT+2
- 
+  // function to update the time on Arduino by button click and to popup message box on HTML page  
   if (server.arg("time_zone")!= ""){
     Serial.println("time_zone: " + server.arg("time_zone"));
-    time_zone = server.arg("time_zone").toFloat();
+    settings["time_zone"] = server.arg("time_zone").toFloat();
   }
   
   // void configTime(int timezone, int daylightOffset_sec, const char* server1, const char* server2, const char* server3
-  configTime( int(time_zone * 3600), 0, "0.de.pool.ntp.org", "1.de.pool.ntp.org");
-  Serial.println("\nWaiting for time");
+  configTime(int(settings["time_zone"].as<float>() * 3600), 0, "0.de.pool.ntp.org", "1.de.pool.ntp.org");
   while (!time(nullptr)) {
     Serial.print(".");
     delay(1000);
   }
   delay(1500);  // need delay to sync with server
-  time_t now = time(nullptr);; 
+  time_t now = time(nullptr);
 
-  server_time_file = SD.open("Server_Time.txt", O_READ | O_WRITE | O_CREAT);
-  if (server_time_file) {
-    server_time_file.print("Time on the server is: ");
-    server_time_file.println(ctime(&now));
-    server_time_file.close();
+  if (server.arg("time_zone")!= ""){
+      String output = "Time on the server is: " + String(ctime(&now));
+      server.sendContent(output);
   }
-
+  
   settings["server_time"] = now;
   // send data to arduino UNO
   serializeJsonPretty(settings, rxtx);
@@ -115,6 +104,7 @@ void sync_time() {
 int read_json() {
   // function to create file with stats
   StaticJsonDocument<350> json_doc; 
+  
   String file_name = "stats/" + get_date();
   String current_hour = get_time();
   String header_line = "Time\tHumidity1\tTemperature1\tHumidity2\tTemperature2\tMoisture1\tMoisture2\tMoisture3";
@@ -123,6 +113,12 @@ int read_json() {
   if (error){
       Serial.println("Error in JSON data received from Uno");
       return 0;
+  }
+
+  if (json_doc["give_me"] == 1){
+    Serial.println("Uno requested settings");
+    sync_time();
+    return 1;
   }
   
   if (SD.exists(file_name)){
@@ -208,4 +204,14 @@ String get_time(){
   }
 
   return hour_part + ":" + min_part + "\t";
+}
+
+void read_settings(){
+  // read settings from JSON file with saved config
+  if (SD.exists("Control_Settings.txt")){
+    settings_file = SD.open("Control_Settings.txt", O_READ);
+    DeserializationError error = deserializeJson(settings, settings_file);
+  } else {
+    settings["time_zone"] = 2.0; // default zone GMT+2
+  }
 }

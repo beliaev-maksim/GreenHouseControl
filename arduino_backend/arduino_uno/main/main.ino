@@ -42,6 +42,8 @@ void setup()
     // relay
     pinMode(LIGHTPIN, OUTPUT);
     pinMode(FANPIN, OUTPUT);
+
+    request_settings();
 }
 
 //todo read time that is set for mcu
@@ -106,22 +108,38 @@ void loop(void) {
     if (current_millis - previous_sent_timer >= send_data_every) {
         previous_sent_timer = current_millis;
         int moist1 = get_moisture(moisture_sens1_pin);
-        send_to_mcu(dht_vals, moist1);       
+        int moist2 = get_moisture(moisture_sens2_pin);
+        int moist3 = get_moisture(moisture_sens3_pin);
+        
+        send_to_mcu(dht_vals, moist1, moist2, moist3);       
     }
 }
 
-void send_to_mcu(dht_struct dht_vals, int moist1) {
+void send_to_mcu(dht_struct dht_vals, int moist1, int moist2, int moist3) {
     // create JSON for sensor data
-    StaticJsonDocument<200> conditions;
+    StaticJsonDocument<350> conditions;
     conditions["hum1"] = dht_vals.hum1;
     conditions["temp1"] = dht_vals.temp1;
     conditions["hum2"] = dht_vals.hum2;
     conditions["temp2"] = dht_vals.temp2;
     conditions["moist1"] = moist1;
+    conditions["moist2"] = moist2;
+    conditions["moist3"] = moist3;
     
     // send data to NodeMCU
     serializeJsonPretty(conditions, rxtx);
     Serial.println("Data sent to MCU");
+}
+
+void request_settings(){
+    // function to request MCU to send settings, after reboot or power off
+    delay(1000); // wait to initialize
+    StaticJsonDocument<100> reqs;
+    reqs["give_me"] = (int) 1;
+
+    // send data to NodeMCU
+    serializeJsonPretty(reqs, rxtx);
+    Serial.println("Settings are requested from MCU");
 }
 
 int get_moisture(const uint8_t port) {
@@ -156,25 +174,19 @@ int get_moisture(const uint8_t port) {
 dht_struct get_dht_data(){
   // function to calculate AVG from multiple measurments from two sensors
   // should be defined as dht_struct type to be assigned later to a dht_vals structure
+  // dht sensors can read data once per 2s, not more
   
   // initialize new structure and all members as zeros
-  dht_struct dht_vals = {0, 0, 0, 0, 0, 0, 0, 0};
+    dht_struct dht_vals = {0, 0, 0, 0, 0, 0, 0, 0};
 
-  // make 100 samples of data every 1ms
-  for (int i = 0; i <= 100; i++) { 
-      dht_vals.hum1 += dht1.readHumidity();
-      dht_vals.temp1 += dht1.readTemperature();
-    
-      dht_vals.hum2 += dht2.readHumidity();
-      dht_vals.temp2 += dht2.readTemperature();
-      delay(1); 
-  } 
+    dht_vals.hum1 = dht1.readHumidity();
+    dht_vals.temp1 = dht1.readTemperature();
+  
+    dht_vals.hum2 = dht2.readHumidity();
+    dht_vals.temp2 = dht2.readTemperature();
 
-    // get average value of data
-    dht_vals.hum1  /= 100.0; 
-    dht_vals.temp1  /= 100.0; 
-    dht_vals.hum2  /= 100.0; 
-    dht_vals.temp2  /= 100.0; 
+    // sensor is showing less value compared to other 3 hygrometers. Add 13% to balance
+    dht_vals.hum2 *= 1.13; 
 
   // evaluate min and max values
     dht_vals.temp_max = max(dht_vals.temp1, dht_vals.temp2);
