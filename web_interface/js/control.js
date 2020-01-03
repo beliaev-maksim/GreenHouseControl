@@ -153,19 +153,27 @@ $('#submit').click(function(e){
         minute = parseInt(sunset[1]);
         var sunset_in_s = hour * 60 * 60 + minute * 60;
       }
-    
-    // use post request instead of get to send data only once
-    // see security advantages of POST method
-    $.post('/save?min_temp=' + min_temp + 
+
+      var time_zone = document.getElementById("time_zone_selector").value;
+
+      var command = '/save?min_temp=' + min_temp + 
         '&max_temp=' + max_temp + 
         '&min_humidity=' + min_humidity + 
         '&max_humidity=' + max_humidity + 
         '&sunrise_in_s=' + sunrise_in_s + 
         '&sunset_in_s=' + sunset_in_s +
         '&fan_mode=' + fan_dict[fan_mode] +
-        '&light_mode=' + light_dict[light_mode], function(data){
-                                    console.log(data);
-                                });
+        '&light_mode=' + light_dict[light_mode] +
+        '&time_zone=' + time_zone;
+    
+      xhr = new XMLHttpRequest();
+      xhr.onreadystatechange = function () {
+          if(xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+              alert(xhr.responseText);
+          };
+      };
+      xhr.open("GET", command, true);
+      xhr.send();
 });      
 
 // function to return ID of the radio button which is activated
@@ -187,21 +195,6 @@ function get_radio_value(element_dict) {
 // $('input[name="light_options"]').change(function(e){
 //     light_mode = e.currentTarget.attributes.id.nodeValue;
 // });  
-
-// called to sync time
-$('#sync_time').click(function(e){
-    e.preventDefault();
-
-    var time_zone = document.getElementById("time_zone_selector").value;
-    $.post('/sync_time?time_zone=' + time_zone);
-
-    var content = get_file_content('Server_Time.txt');
-    if (content != false) {
-        
-        result = content.match(/[^\r\n]+/g);
-        alert(result[0]);
-    }
-});      
 
 // specify a method to convert integer to time string
 Number.prototype.toHHMMSS = function () {
@@ -231,6 +224,14 @@ window.onload = function() {
         $('#sunrise').val(settings.sunrise_in_s.toHHMMSS());
 
         $('#sunset').val(settings.sunset_in_s.toHHMMSS());
+
+        for (var key in time_zone_dict){
+          if(time_zone_dict[key] == settings.time_zone) {
+            $('#time_zone_selector').val(time_zone_dict[key]);
+            break;
+          }
+        } 
+        
         
         // first unactivate default values  
         document.getElementById("fan_on").parentElement.classList.remove('active');
