@@ -17,7 +17,7 @@ int water = 1900;  // totally wet, sensor was in water
 int air = 3600;  // totally dry, sensor was in air
 
 // time settings
-const long send_data_every = 600000; // send data to MCU every 10min
+const long send_data_every = 6000000; // send data to MCU every 10min
 const long read_dht_every = 10000; // read data from DHT sensor every 10s, not less 2s!
 const long enable_fan_every = 5400000; // 5400s->90min, needed to circulate air
 const long fan_on_time = 900000; // fan will be ON during this time frame

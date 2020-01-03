@@ -23,7 +23,7 @@
 #endif
 
 SoftwareSerial rxtx(D1, D0);
-StaticJsonDocument<300> settings;
+StaticJsonDocument<400> settings;
 
 const char* ssid = STASSID;
 const char* password = STAPSK;
@@ -285,8 +285,7 @@ void setup(void) {
     DBG_OUTPUT_PORT.println(".local");
   }
 
-  server.on("/save", change_settings);  // add own callback to update variables from HTML
-  server.on("/sync_time", sync_time);
+  server.on("/save", HTTP_GET, change_settings);  // add own callback to update variables from HTML
   server.on("/list", HTTP_GET, printDirectory);
   server.on("/edit", HTTP_DELETE, handleDelete);
   server.on("/edit", HTTP_PUT, handleCreate);
@@ -302,6 +301,9 @@ void setup(void) {
     DBG_OUTPUT_PORT.println("SD Card initialized.");
     hasSD = true;
   }
+
+  read_settings();
+  sync_time();
 }
 
 void loop(void) {
@@ -317,7 +319,6 @@ void loop(void) {
 
   if (current_millis - previous_sent_timer >= send_data_every) {
         previous_sent_timer = current_millis;
-        serializeJsonPretty(settings, rxtx);
-        Serial.println("Settings sent to UNO");
+        sync_time();
   }
 }

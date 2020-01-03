@@ -133,8 +133,9 @@ void send_to_mcu(dht_struct dht_vals, int moist1, int moist2, int moist3) {
 
 void request_settings(){
     // function to request MCU to send settings, after reboot or power off
+    delay(1000); // wait to initialize
     StaticJsonDocument<100> reqs;
-    reqs["give_me"] = 1;
+    reqs["give_me"] = (int) 1;
 
     // send data to NodeMCU
     serializeJsonPretty(reqs, rxtx);
