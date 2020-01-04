@@ -1,6 +1,6 @@
 // main file to handle server and main loop
 // in server file we initialize setup() funcion with:
-// sync_time, init of dht sensor, wifi server
+// getting server settings from MCU, init of dht and moisture sensor
 #include "settings.h"
 #include <DHT.h>
 #include <SoftwareSerial.h>
@@ -43,6 +43,11 @@ void setup()
     pinMode(LIGHTPIN, OUTPUT);
     pinMode(FANPIN, OUTPUT);
 
+    // init moisture sensors since first value is wrong
+    get_moisture(moisture_sens1_pin);
+    get_moisture(moisture_sens2_pin);
+    get_moisture(moisture_sens3_pin);
+
     request_settings();
 }
 
@@ -52,22 +57,19 @@ void loop(void) {
     // get system settings from NodeMCU
     // use of available to check if there is any data in buffer. DO NOT use it for sending info
     if (rxtx.available() > 0){
-      read_json();
+        read_json();
     }
     // get current system wake up time
     unsigned long current_millis = millis();
 
     //convert to seconds,do not forget to convert numbers to unsigned long
     unsigned long time_in_s = (unsigned long) 3600 * hour() + (unsigned long) 60 * minute() + second();     
-        
-    if (light_mode == 1 ||
-        (light_mode == 2 && 
-          (sunrise < time_in_s && time_in_s < sunset)
-         )
-       ) {
-      // auto mode
-      // current limitation    that start time is always less than stop time 
-      // start 16:00, stop 02:00 is not allowed
+
+    bool time_in_range = sunrise < time_in_s && time_in_s < sunset;
+    if (light_mode == 1 || (light_mode == 2 && time_in_range)) {
+        // auto mode or forced ON mode
+        // current limitation    that start time is always less than stop time 
+        // start 16:00, stop 02:00 is not allowed
         digitalWrite(LIGHTPIN, HIGH); 
     } else {
         digitalWrite(LIGHTPIN, LOW); 
@@ -75,27 +77,27 @@ void loop(void) {
     
     //Stores humidity and temperature value from DHT sensor, read values every 10s
     if (current_millis - previous_dht_read >= read_dht_every){
-      previous_dht_read = current_millis;
-
-      dht_vals = get_dht_data();
+        previous_dht_read = current_millis;
+  
+        dht_vals = get_dht_data();
     }
 
     // todo need to read min max for temp and humid values from MCU
     if (fan_mode == 2) {
-      // auto mode
-      if (current_millis - previous_millis >= enable_fan_every ||
-          dht_vals.temp_max > max_temp ||
-          dht_vals.hum_max > max_humid) {
-          previous_millis = current_millis;
-          digitalWrite(FANPIN, HIGH);     
-      }
-  
-      // after we enable fan we will give it to work at least 15 min to have system stability
-      if (current_millis - previous_millis >= fan_on_time ||
-          dht_vals.temp_min < min_temp ||
-          dht_vals.hum_min < min_humid) {
-          digitalWrite(FANPIN, LOW); 
-      }
+        // auto mode
+        if (current_millis - previous_millis >= enable_fan_every ||
+            dht_vals.temp_max > max_temp ||
+            dht_vals.hum_max > max_humid) {
+            previous_millis = current_millis;
+            digitalWrite(FANPIN, HIGH);     
+        }
+    
+        // after we enable fan we will give it to work at least 15 min to have system stability
+        if (current_millis - previous_millis >= fan_on_time ||
+            dht_vals.temp_min < min_temp ||
+            dht_vals.hum_min < min_humid) {
+            digitalWrite(FANPIN, LOW); 
+        }
     } else if (fan_mode == 1) {
         // ON mode
         digitalWrite(FANPIN, HIGH);  
@@ -108,7 +110,9 @@ void loop(void) {
     if (current_millis - previous_sent_timer >= send_data_every) {
         previous_sent_timer = current_millis;
         int moist1 = get_moisture(moisture_sens1_pin);
+        delay(500); // need delay for proper work
         int moist2 = get_moisture(moisture_sens2_pin);
+        delay(500);
         int moist3 = get_moisture(moisture_sens3_pin);
         
         send_to_mcu(dht_vals, moist1, moist2, moist3);       
@@ -134,7 +138,7 @@ void send_to_mcu(dht_struct dht_vals, int moist1, int moist2, int moist3) {
 void request_settings(){
     // function to request MCU to send settings, after reboot or power off
     delay(1000); // wait to initialize
-    StaticJsonDocument<100> reqs;
+    StaticJsonDocument<60> reqs;
     reqs["give_me"] = (int) 1;
 
     // send data to NodeMCU
@@ -146,14 +150,26 @@ int get_moisture(const uint8_t port) {
     // definition of data for moisture sensor, collibrate analog data to RH
     // to defind port as argument need "const uint8_t" type
 
+    int air, water;
+    if (port == moisture_sens1_pin){
+        air = air1;
+        water = water1;
+    } else if (port == moisture_sens2_pin){
+        air = air2;
+        water = water2;
+    } else if (port == moisture_sens3_pin){
+        air = air3;
+        water = water3;
+    }
+
     int rh = (air - water)/100;
 
     float sensor_value = 0;
 
-    // make 100 samples of data every 1ms
+    // make 100 samples of data every 2ms
     for (int i = 0; i <= 100; i++) { 
         sensor_value += analogRead(port); 
-        delay(1); 
+        delay(2); 
     } 
 
     // get average value of data
@@ -172,11 +188,11 @@ int get_moisture(const uint8_t port) {
 }
 
 dht_struct get_dht_data(){
-  // function to calculate AVG from multiple measurments from two sensors
-  // should be defined as dht_struct type to be assigned later to a dht_vals structure
-  // dht sensors can read data once per 2s, not more
-  
-  // initialize new structure and all members as zeros
+    // function to calculate AVG from multiple measurments from two sensors
+    // should be defined as dht_struct type to be assigned later to a dht_vals structure
+    // dht sensors can read data once per 2s, not more
+    
+    // initialize new structure and all members as zeros
     dht_struct dht_vals = {0, 0, 0, 0, 0, 0, 0, 0};
 
     dht_vals.hum1 = dht1.readHumidity();
@@ -188,19 +204,19 @@ dht_struct get_dht_data(){
     // sensor is showing less value compared to other 3 hygrometers. Add 13% to balance
     dht_vals.hum2 *= 1.13; 
 
-  // evaluate min and max values
+    // evaluate min and max values
     dht_vals.temp_max = max(dht_vals.temp1, dht_vals.temp2);
     dht_vals.hum_max = max(dht_vals.hum1, dht_vals.hum2);
     dht_vals.temp_min = min(dht_vals.temp1, dht_vals.temp2);
     dht_vals.hum_min = min(dht_vals.hum1, dht_vals.hum2);
     
-  return dht_vals;
+    return dht_vals;
 }
 
 void read_json() {
-  StaticJsonDocument<300> json_doc;
-  DeserializationError error = deserializeJson(json_doc, rxtx);
-  if (!error){
+    StaticJsonDocument<300> json_doc;
+    DeserializationError error = deserializeJson(json_doc, rxtx);
+    if (!error){
         serializeJsonPretty(json_doc, Serial);
         Serial.println("JSON received and parsed");
 
@@ -218,7 +234,7 @@ void read_json() {
 
         server_time = json_doc["server_time"];
         setTime(server_time);     
-  } else {
-    Serial.println("Error");
-  }
+    } else {
+        Serial.println("Error");
+    }
 }
