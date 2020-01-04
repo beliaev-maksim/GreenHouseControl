@@ -374,6 +374,13 @@ a:hover, a:active, a:focus {
   color: #ffffff;
 }
 
+/*---------------------------------------
+   Stats section              
+-----------------------------------------*/
+#plots .col-xs-offset-0 {
+  padding-left: 0;
+  padding-right: 0;
+}
 
 /*---------------------------------------
    Control section              
