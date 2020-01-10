@@ -43,19 +43,27 @@ void setup()
     pinMode(LIGHTPIN, OUTPUT);
     pinMode(FANPIN, OUTPUT);
 
+    // LED
+    pinMode(LEDPIN, OUTPUT);
+
     // init moisture sensors since first value is wrong
     get_moisture(moisture_sens1_pin);
     get_moisture(moisture_sens2_pin);
     get_moisture(moisture_sens3_pin);
 
-    request_settings();
+    delay(10000); // give time MCU to initialize
+    while(server_time < 100){
+        request_settings();
+        for (int j=0; j<50; j++){
+          read_json();
+          delay(100);
+        }
+    }
 }
-
-//todo read time that is set for mcu
 
 void loop(void) {    
     // get system settings from NodeMCU
-    // use of available to check if there is any data in buffer. DO NOT use it for sending info
+    // use of available to check if there is any data in buffer. DO NOT use rxtx.available for sending info
     if (rxtx.available() > 0){
         read_json();
     }
@@ -82,7 +90,6 @@ void loop(void) {
         dht_vals = get_dht_data();
     }
 
-    // todo need to read min max for temp and humid values from MCU
     if (fan_mode == 2) {
         // auto mode
         if (current_millis - previous_millis >= enable_fan_every ||
@@ -106,7 +113,7 @@ void loop(void) {
     }
     
     // send data only once per hour
-    // todo maybe send every 10 min
+
     if (current_millis - previous_sent_timer >= send_data_every) {
         previous_sent_timer = current_millis;
         int moist1 = get_moisture(moisture_sens1_pin);
@@ -114,6 +121,14 @@ void loop(void) {
         int moist2 = get_moisture(moisture_sens2_pin);
         delay(500);
         int moist3 = get_moisture(moisture_sens3_pin);
+
+        int min_moist = min(moist1, min(moist2, moist3));
+        if (min_moist < 15) {
+            // one of the pots is very dry, let's indicate
+            digitalWrite(LEDPIN, HIGH); 
+        } else {
+            digitalWrite(LEDPIN, LOW); 
+        }
         
         send_to_mcu(dht_vals, moist1, moist2, moist3);       
     }
@@ -178,11 +193,8 @@ int get_moisture(const uint8_t port) {
     int moisture = round((air - sensor_value) / rh);
 
     // remove noisy values, cannot be less or greater than 0 and 100%
-    if (moisture < 0) {
-        moisture = 0;
-    } else if (moisture > 100) {
-        moisture = 100;
-    }
+    moisture = min(moisture, 100);
+    moisture = max(moisture, 0);
 
     return moisture;
 }

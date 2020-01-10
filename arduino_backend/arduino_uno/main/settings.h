@@ -8,6 +8,8 @@
 #define LIGHTPIN 10     // pin for relay, light
 #define FANPIN 11       // pin for relay, fan
 
+#define LEDPIN 12       // pin for LED, when moister < 10%
+
 const uint8_t moisture_sens1_pin = A0; // set analog pin for moisture sensor (red)
 const uint8_t moisture_sens2_pin = A1; // set analog pin for moisture sensor (white)
 const uint8_t moisture_sens3_pin = A2; // set analog pin for moisture sensor (blue)
@@ -24,7 +26,7 @@ int water3 = 2055;  // totally wet, sensor was in water
 int air3 = 3670;  // totally dry, sensor was in air
 
 // time settings
-const long send_data_every = 1200000; // send data to MCU every 10min
+const long send_data_every = 1200000; // send data to MCU every 20min
 const long read_dht_every = 10000; // read data from DHT sensor every 10s, not less 2s!
 const long enable_fan_every = 5400000; // 5400s->90min, needed to circulate air
 const long fan_on_time = 900000; // fan will be ON during this time frame
