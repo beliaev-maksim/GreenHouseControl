@@ -1,5 +1,5 @@
 // main file to handle server and main loop
-// in server file we initialize setup() funcion with:
+// in server file we initialize setup() function with:
 // getting server settings from MCU, init of dht and moisture sensor
 #include "settings.h"
 #include <DHT.h>
@@ -55,7 +55,10 @@ void setup()
     while(server_time < 100){
         request_settings();
         for (int j=0; j<50; j++){
-          read_json();
+          int success = read_json();
+          if (success == 1) {
+              break;
+          }
           delay(100);
         }
     }
@@ -162,8 +165,8 @@ void request_settings(){
 }
 
 int get_moisture(const uint8_t port) {
-    // definition of data for moisture sensor, collibrate analog data to RH
-    // to defind port as argument need "const uint8_t" type
+    // definition of data for moisture sensor, calibrate analog data to RH
+    // to define port as argument need "const uint8_t" type
 
     int air, water;
     if (port == moisture_sens1_pin){
@@ -183,12 +186,13 @@ int get_moisture(const uint8_t port) {
 
     // make 100 samples of data every 2ms
     for (int i = 0; i <= 100; i++) { 
-        sensor_value += analogRead(port); 
+        sensor_value += analogRead(port);
         delay(2); 
     } 
 
     // get average value of data
-    sensor_value  /= 100.0; 
+    sensor_value  /= 100.0;
+    //Serial.println(sensor_value);
 
     int moisture = round((air - sensor_value) / rh);
 
@@ -200,7 +204,7 @@ int get_moisture(const uint8_t port) {
 }
 
 dht_struct get_dht_data(){
-    // function to calculate AVG from multiple measurments from two sensors
+    // function to calculate AVG from multiple measurements from two sensors
     // should be defined as dht_struct type to be assigned later to a dht_vals structure
     // dht sensors can read data once per 2s, not more
     
@@ -225,28 +229,46 @@ dht_struct get_dht_data(){
     return dht_vals;
 }
 
-void read_json() {
+int read_json() {
     StaticJsonDocument<300> json_doc;
     DeserializationError error = deserializeJson(json_doc, rxtx);
     if (!error){
         serializeJsonPretty(json_doc, Serial);
         Serial.println("JSON received and parsed");
 
-        fan_mode = json_doc["fan_mode"];
-        light_mode = json_doc["light_mode"];
+        if (json_doc.containsKey("fan_mode")){
+            fan_mode = json_doc["fan_mode"];
+        }
 
-        min_humid = json_doc["min_humidity"];
-        max_humid = json_doc["max_humidity"];
+        if (json_doc.containsKey("light_mode")){
+            light_mode = json_doc["light_mode"];
+        }
 
-        min_temp = json_doc["min_temp"];
-        max_temp = json_doc["max_temp"];
-        
-        sunrise = json_doc["sunrise_in_s"];
-        sunset = json_doc["sunset_in_s"];
+        if (json_doc.containsKey("min_humidity") &&
+            json_doc.containsKey("max_humidity")){
+              min_humid = json_doc["min_humidity"];
+              max_humid = json_doc["max_humidity"];
+        }
 
-        server_time = json_doc["server_time"];
-        setTime(server_time);     
+        if (json_doc.containsKey("min_temp") &&
+            json_doc.containsKey("max_temp")){
+              min_temp = json_doc["min_temp"];
+              max_temp = json_doc["max_temp"];
+        }
+
+        if (json_doc.containsKey("sunrise_in_s") &&
+            json_doc.containsKey("sunset_in_s")){
+              sunrise = json_doc["sunrise_in_s"];
+              sunset = json_doc["sunset_in_s"];
+        }
+
+        if (json_doc.containsKey("server_time")){
+            server_time = json_doc["server_time"];
+            setTime(server_time); 
+        } 
+        return 1;           
     } else {
-        Serial.println("Error");
+        Serial.println("Error reading settings");
+        return 0;
     }
 }
