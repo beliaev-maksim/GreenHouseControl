@@ -20,6 +20,8 @@ unsigned long previous_millis = 0;
 unsigned long previous_sent_timer = 0; // timer to count when we send data to MCU
 unsigned long previous_dht_read = 0; // timer to count when we send data to MCU
 
+int fan_state = LOW;
+
 // variable for server time in seconds
 time_t server_time = 0; 
 
@@ -27,7 +29,7 @@ time_t server_time = 0;
 typedef struct
  {
      float hum1, temp1, hum2, temp2;
-     float temp_max, hum_max, temp_min, hum_min;
+     float temp_avg, hum_avg;
  }  dht_struct;
 dht_struct dht_vals;  // initialize dht_values with just defined struct
 
@@ -95,28 +97,31 @@ void loop(void) {
 
     if (fan_mode == 2) {
         // auto mode
-        if (current_millis - previous_millis >= enable_fan_every ||
-            dht_vals.temp_max > max_temp ||
-            dht_vals.hum_max > max_humid) {
+        //assumption: if Uno is already running and state is changed (eg On->Auto) it will enable fan any case
+        if (current_millis - previous_millis >= enable_fan_every || 
+            dht_vals.temp_avg > max_temp ||
+            dht_vals.hum_avg > max_humid) {
             previous_millis = current_millis;
-            digitalWrite(FANPIN, HIGH);     
+            fan_state = HIGH;    
         }
     
         // after we enable fan we will give it to work at least 15 min to have system stability
-        if (current_millis - previous_millis >= fan_on_time ||
-            dht_vals.temp_min < min_temp ||
-            dht_vals.hum_min < min_humid) {
-            digitalWrite(FANPIN, LOW); 
+        // we ignore minimum Temp and Humidity. From application should be irrelevant
+        if (current_millis - previous_millis >= fan_on_time &&
+            fan_state == HIGH) {
+            previous_millis = current_millis;
+            fan_state = LOW;
         }
     } else if (fan_mode == 1) {
-        // ON mode
-        digitalWrite(FANPIN, HIGH);  
+        // always ON mode
+        fan_state = HIGH; 
     } else {
-        digitalWrite(FANPIN, LOW); 
+        fan_state = LOW;
     }
-    
-    // send data only once per hour
 
+    digitalWrite(FANPIN, fan_state); 
+    
+    // send data only once per defined period
     if (current_millis - previous_sent_timer >= send_data_every) {
         previous_sent_timer = current_millis;
         int moist1 = get_moisture(moisture_sens1_pin);
@@ -209,7 +214,7 @@ dht_struct get_dht_data(){
     // dht sensors can read data once per 2s, not more
     
     // initialize new structure and all members as zeros
-    dht_struct dht_vals = {0, 0, 0, 0, 0, 0, 0, 0};
+    dht_struct dht_vals = {0, 0, 0, 0, 0, 0};
 
     dht_vals.hum1 = dht1.readHumidity();
     dht_vals.temp1 = dht1.readTemperature();
@@ -221,11 +226,10 @@ dht_struct get_dht_data(){
     dht_vals.hum2 *= 1.13; 
 
     // evaluate min and max values
-    dht_vals.temp_max = max(dht_vals.temp1, dht_vals.temp2);
-    dht_vals.hum_max = max(dht_vals.hum1, dht_vals.hum2);
-    dht_vals.temp_min = min(dht_vals.temp1, dht_vals.temp2);
-    dht_vals.hum_min = min(dht_vals.hum1, dht_vals.hum2);
     
+    dht_vals.temp_avg = (dht_vals.temp1 + dht_vals.temp2)/2;
+    dht_vals.hum_avg = (dht_vals.hum1 + dht_vals.hum2)/2;
+
     return dht_vals;
 }
 
