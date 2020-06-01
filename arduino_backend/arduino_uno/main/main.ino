@@ -18,10 +18,15 @@ SoftwareSerial rxtx(RXPIN,TXPIN);
 // define variable to store time, used instead of delay()
 unsigned long previous_millis = 0; 
 unsigned long previous_sent_timer = 0; // timer to count when we send data to MCU
-unsigned long previous_dht_read = 0; // timer to count when we send data to MCU
+unsigned long previous_dht_read = 0; // timer to count when we read DHT data
+unsigned long water_millis = 0; // timer to count when we turned water last time
 
 int fan_state = LOW;
+int water_state = LOW;
 
+
+float duration = water_day_duration;
+float pause = water_day_pause;
 // variable for server time in seconds
 time_t server_time = 0; 
 
@@ -44,6 +49,7 @@ void setup()
     // relay
     pinMode(LIGHTPIN, OUTPUT);
     pinMode(FANPIN, OUTPUT);
+    pinMode(WATERPIN, OUTPUT);
 
     // LED
     pinMode(LEDPIN, OUTPUT);
@@ -87,6 +93,34 @@ void loop(void) {
     } else {
         digitalWrite(LIGHTPIN, LOW); 
     }
+
+    if (water_mode == 1 || (water_mode == 2 && time_in_range)) {
+        // auto mode (take day night from light settings) or day watering mode
+        duration = water_day_duration;
+        pause = water_day_pause;
+    } else if (water_mode == 2) {
+      // auto and night time
+        duration = water_night_duration;
+        pause = water_night_pause;
+    }
+    
+    if (water_mode == 1 || water_mode == 2) {
+        if (water_state == HIGH && 
+              current_millis - water_millis >= duration) {
+            water_millis = current_millis;
+            water_state = LOW;
+        }
+
+        if (water_state == LOW && 
+              current_millis - water_millis >= pause) {
+            water_millis = current_millis;
+            water_state = HIGH;
+        }
+    } else {
+        // off mode
+        water_state = LOW;
+    }
+    digitalWrite(WATERPIN, water_state); 
     
     //Stores humidity and temperature value from DHT sensor, read values every 10s
     if (current_millis - previous_dht_read >= read_dht_every){
@@ -99,8 +133,8 @@ void loop(void) {
         // auto mode
         //assumption: if Uno is already running and state is changed (eg On->Auto) it will enable fan any case
         if (current_millis - previous_millis >= enable_fan_every || 
-            dht_vals.temp_avg > max_temp ||
-            dht_vals.hum_avg > max_humid) {
+              dht_vals.temp_avg > max_temp ||
+              dht_vals.hum_avg > max_humid) {
             previous_millis = current_millis;
             fan_state = HIGH;    
         }
@@ -108,7 +142,7 @@ void loop(void) {
         // after we enable fan we will give it to work at least 15 min to have system stability
         // we ignore minimum Temp and Humidity. From application should be irrelevant
         if (current_millis - previous_millis >= fan_on_time &&
-            fan_state == HIGH) {
+              fan_state == HIGH) {
             previous_millis = current_millis;
             fan_state = LOW;
         }
@@ -234,7 +268,7 @@ dht_struct get_dht_data(){
 }
 
 int read_json() {
-    StaticJsonDocument<300> json_doc;
+    StaticJsonDocument<500> json_doc;
     DeserializationError error = deserializeJson(json_doc, rxtx);
     if (!error){
         serializeJsonPretty(json_doc, Serial);
@@ -246,6 +280,10 @@ int read_json() {
 
         if (json_doc.containsKey("light_mode")){
             light_mode = json_doc["light_mode"];
+        }
+
+        if (json_doc.containsKey("water_mode")){
+            water_mode = json_doc["water_mode"];
         }
 
         if (json_doc.containsKey("min_humidity") &&
@@ -264,6 +302,22 @@ int read_json() {
             json_doc.containsKey("sunset_in_s")){
               sunrise = json_doc["sunrise_in_s"];
               sunset = json_doc["sunset_in_s"];
+        }
+
+        if (json_doc.containsKey("water_day_duration") &&
+            json_doc.containsKey("water_day_pause")){
+              water_day_duration = json_doc["water_day_duration"];
+              water_day_pause = json_doc["water_day_pause"];
+              water_day_duration *= 1000;
+              water_day_pause *= 1000;
+        }
+
+        if (json_doc.containsKey("water_night_duration") &&
+            json_doc.containsKey("water_night_pause")){
+              water_night_duration = json_doc["water_night_duration"];
+              water_night_pause = json_doc["water_night_pause"];
+              water_night_duration *= 1000;
+              water_night_pause *= 1000;
         }
 
         if (json_doc.containsKey("server_time")){

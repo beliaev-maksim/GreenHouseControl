@@ -111,8 +111,8 @@ $('#submit').click(function(e){
     const max_temp = $('#max_temp').val();
     const min_humidity = $('#min_humidity').val();
     const max_humidity = $('#max_humidity').val(); 
-    const sunrise = $('#sunrise').val();
-    const sunset = $('#sunset').val();
+    let sunrise = $('#sunrise').val();
+    let sunset = $('#sunset').val();
     const water_day_duration = $('#water_day_duration').val();
     const water_day_pause = $('#water_day_pause').val();
     const water_night_duration = $('#water_night_duration').val();

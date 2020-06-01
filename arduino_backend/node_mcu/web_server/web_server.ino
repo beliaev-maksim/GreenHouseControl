@@ -23,7 +23,7 @@
 #endif
 
 SoftwareSerial rxtx(D1, D0);
-StaticJsonDocument<400> settings;
+StaticJsonDocument<600> settings;
 
 const char* ssid = STASSID;
 const char* password = STAPSK;

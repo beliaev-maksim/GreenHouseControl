@@ -7,6 +7,7 @@
 
 #define LIGHTPIN 10     // pin for relay, light
 #define FANPIN 11       // pin for relay, fan
+#define WATERPIN 8       // pin for relay, watering
 
 #define LEDPIN 12       // pin for LED, when moister < 10%
 
@@ -36,8 +37,17 @@ float max_humid = 65.0;
 float min_humid = 30.0;
 float max_temp = 25.0;
 float min_temp = 15.0;
+
+float water_day_duration = 15000;
+float water_day_pause = 180000;
+
+float water_night_duration = 15000;
+float water_night_pause = 300000;
+
+
 unsigned long sunrise = 25200;
 unsigned long sunset = 82800;
 
 int light_mode = 2;
 int fan_mode = 2;
+int water_mode = 2;
