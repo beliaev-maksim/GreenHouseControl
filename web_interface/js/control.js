@@ -1,23 +1,26 @@
-var min_temp, max_temp;
-var min_humidity, max_humidity;
-var sunrise, sunset;
-
 var light_mode;
 var fan_mode;
+var water_mode;
 
-var fan_dict = {
+const fan_dict = {
   "fan_off": 0,
   "fan_on": 1,
   "fan_auto": 2
 };
 
-var light_dict ={
+const light_dict ={
   "light_off": 0,
   "light_on": 1,
   "light_auto": 2
 };
 
-var time_zone_dict = {
+const water_dict ={
+  "water_off": 0,
+  "water_day": 1,
+  "water_auto": 2
+};
+
+const time_zone_dict = {
   "(GMT-12:00) International Date Line West": "-12",
   "(GMT-11:00) Midway Island, Samoa": "-11",
   "(GMT-10:00) Hawaii": "-10",
@@ -104,16 +107,21 @@ var time_zone_dict = {
 $('#submit').click(function(e){
     e.preventDefault();
 
-    min_temp = $('#min_temp').val();
-    max_temp = $('#max_temp').val();
-    min_humidity = $('#min_humidity').val();
-    max_humidity = $('#max_humidity').val(); 
-    sunrise = $('#sunrise').val();
-    sunset = $('#sunset').val();
+    const min_temp = $('#min_temp').val();
+    const max_temp = $('#max_temp').val();
+    const min_humidity = $('#min_humidity').val();
+    const max_humidity = $('#max_humidity').val(); 
+    const sunrise = $('#sunrise').val();
+    const sunset = $('#sunset').val();
+    const water_day_duration = $('#water_day_duration').val();
+    const water_day_pause = $('#water_day_pause').val();
+    const water_night_duration = $('#water_night_duration').val();
+    const water_night_pause = $('#water_night_pause').val();
 
 
     fan_mode = get_radio_value(fan_dict);
     light_mode = get_radio_value(light_dict);   
+    water_mode = get_radio_value(water_dict);
 
     if (fan_mode == "fan_auto") {
       // check settings only if Auto mode
@@ -144,36 +152,54 @@ $('#submit').click(function(e){
       var sunrise_in_s = hour * 60 * 60 + minute * 60;
     }
       
-      if (light_mode == "light_auto" && 
-          (sunset == "" ||sunset < 0)) {
-        return alert("Sunset cannot be empty or negative");
-      } else {
-        sunset = sunset.split(":");
-        hour = parseInt(sunset[0]);
-        minute = parseInt(sunset[1]);
-        var sunset_in_s = hour * 60 * 60 + minute * 60;
+    if (light_mode == "light_auto" && 
+        (sunset == "" ||sunset < 0)) {
+      return alert("Sunset cannot be empty or negative");
+    } else {
+      sunset = sunset.split(":");
+      hour = parseInt(sunset[0]);
+      minute = parseInt(sunset[1]);
+      var sunset_in_s = hour * 60 * 60 + minute * 60;
+    }
+
+    if (water_mode == "water_auto" || water_mode == "water_day") {
+      if (water_day_duration < 0 || water_day_pause < 0 ||
+          water_day_duration == "" || water_day_pause == "") {
+          return alert("Watering duration and pause cannot be empty or negative");
       }
-
-      var time_zone = document.getElementById("time_zone_selector").value;
-
-      var command = '/save?min_temp=' + min_temp + 
-        '&max_temp=' + max_temp + 
-        '&min_humidity=' + min_humidity + 
-        '&max_humidity=' + max_humidity + 
-        '&sunrise_in_s=' + sunrise_in_s + 
-        '&sunset_in_s=' + sunset_in_s +
-        '&fan_mode=' + fan_dict[fan_mode] +
-        '&light_mode=' + light_dict[light_mode] +
-        '&time_zone=' + time_zone;
+    } 
+    if (water_mode == "water_auto") {
+      if (water_night_duration < 0 || water_night_pause < 0 ||
+        water_night_duration == "" || water_night_pause == "") {
+        return alert("Watering duration and pause cannot be empty or negative");
+      }
+    }
     
-      xhr = new XMLHttpRequest();
-      xhr.onreadystatechange = function () {
-          if(xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
-              alert(xhr.responseText);
-          };
-      };
-      xhr.open("GET", command, true);
-      xhr.send();
+    var time_zone = document.getElementById("time_zone_selector").value;
+
+    var command = '/save?min_temp=' + min_temp + 
+      '&max_temp=' + max_temp + 
+      '&min_humidity=' + min_humidity + 
+      '&max_humidity=' + max_humidity + 
+      '&sunrise_in_s=' + sunrise_in_s + 
+      '&sunset_in_s=' + sunset_in_s +
+      '&water_day_duration=' + water_day_duration + 
+      '&water_day_pause=' + water_day_pause + 
+      '&water_night_duration=' + water_night_duration + 
+      '&water_night_pause=' + water_night_pause +
+      '&fan_mode=' + fan_dict[fan_mode] +
+      '&light_mode=' + light_dict[light_mode] +
+      '&water_mode=' + water_dict[water_mode] +
+      '&time_zone=' + time_zone;
+  
+    xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function () {
+        if(xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+            alert(xhr.responseText);
+        };
+    };
+    xhr.open("GET", command, true);
+    xhr.send();
 });      
 
 // function to return ID of the radio button which is activated
@@ -222,8 +248,12 @@ window.onload = function() {
         $('#max_humidity').val(settings.max_humidity);
         
         $('#sunrise').val(settings.sunrise_in_s.toHHMMSS());
-
         $('#sunset').val(settings.sunset_in_s.toHHMMSS());
+
+        $('#water_day_duration').val(settings.water_day_duration);
+        $('#water_day_pause').val(settings.water_day_pause);
+        $('#water_night_duration').val(settings.water_night_duration);
+        $('#water_night_pause').val(settings.water_night_pause);
 
         for (var key in time_zone_dict){
           if(time_zone_dict[key] == settings.time_zone) {
@@ -236,6 +266,7 @@ window.onload = function() {
         // first unactivate default values  
         document.getElementById("fan_on").parentElement.classList.remove('active');
         document.getElementById("light_on").parentElement.classList.remove('active');
+        document.getElementById("water_day").parentElement.classList.remove('active');
         
         var id;
         switch(settings.fan_mode){
@@ -260,6 +291,19 @@ window.onload = function() {
             break;
           case 2: 
             id = 'light_auto';
+            break;
+        }
+        document.getElementById(id).parentElement.classList.add('active');
+
+        switch(settings.water_mode){
+          case 0: 
+            id = 'water_off';
+            break;
+          case 1: 
+            id = 'water_day';
+            break;
+          case 2: 
+            id = 'water_auto';
             break;
         }
         document.getElementById(id).parentElement.classList.add('active');
