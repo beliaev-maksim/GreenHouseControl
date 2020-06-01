@@ -16,46 +16,22 @@ uint8_t const O_TRUNC = 0X40;
 
 void change_settings() {
   // function called when you click Set button on Control web page
-  if (server.arg("min_temp")!= ""){
-    Serial.println("min_temp: " + server.arg("min_temp"));
-    settings["min_temp"] = server.arg("min_temp").toFloat();
-  }
-  
-  if (server.arg("max_temp")!= ""){
-    Serial.println("max_temp: " + server.arg("max_temp"));
-    settings["max_temp"] = server.arg("max_temp").toFloat();
-  }
-  
-  if (server.arg("min_humidity")!= ""){
-    Serial.println("min_humidity: " + server.arg("min_humidity"));
-    settings["min_humidity"] = server.arg("min_humidity").toFloat();
-  }
-  
-  if (server.arg("max_humidity")!= ""){
-    Serial.println("max_humidity: " + server.arg("max_humidity"));
-    settings["max_humidity"] = server.arg("max_humidity").toFloat();
-  }
-  
-  if (server.arg("sunrise_in_s")!= ""){
-    Serial.println("sunrise_in_s: " + server.arg("sunrise_in_s"));
-    settings["sunrise_in_s"] = server.arg("sunrise_in_s").toInt();
-  }
-  
-  if (server.arg("sunset_in_s")!= ""){
-    Serial.println("sunset_in_s: " + server.arg("sunset_in_s"));
-    settings["sunset_in_s"] = server.arg("sunset_in_s").toInt();
-  }
-
-  if (server.arg("fan_mode")!= ""){
-    Serial.println("fan_mode: " + server.arg("fan_mode"));
-    settings["fan_mode"] = server.arg("fan_mode").toInt();
-  }
-
-  if (server.arg("light_mode")!= ""){
-    Serial.println("light_mode: " + server.arg("light_mode"));
-    settings["light_mode"] = server.arg("light_mode").toInt();
-  }
-
+  for (int i = 0; i < server.args(); i++) { 
+    String arg_name = server.argName(i);
+    if (arg_name == "min_temp" ||
+          arg_name == "max_temp" ||
+          arg_name == "min_humidity" ||
+          arg_name == "max_humidity" ||
+          arg_name == "water_day_duration" ||
+          arg_name == "water_day_pause" ||
+          arg_name == "water_night_duration" ||
+          arg_name == "water_night_pause"
+          ){
+      settings[arg_name] = server.arg(arg_name).toFloat();
+    } else {
+      settings[arg_name] = server.arg(arg_name).toInt();
+    }
+  } 
   sync_time();
 
   // write all new setting on SD card
