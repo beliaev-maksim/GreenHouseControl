@@ -205,8 +205,8 @@ function createFileUploader(element, tree, editor){
       var divContext = document.createElement("div");
       var scrollTop = document.body.scrollTop ? document.body.scrollTop : document.documentElement.scrollTop;
       var scrollLeft = document.body.scrollLeft ? document.body.scrollLeft : document.documentElement.scrollLeft;
-      var left = event.clientX + scrollLeft;
-      var top = event.clientY + scrollTop;
+      var left = event.clientX + scrollLeft - 1;  // add -1 to be always within element to catch event
+      var top = event.clientY + scrollTop - 1;
       divContext.className = 'contextMenu';
       divContext.style.display = 'block';
       divContext.style.left = left + 'px';
@@ -214,12 +214,10 @@ function createFileUploader(element, tree, editor){
       if(isfile) fillFileMenu(divContext, path);
       else fillFolderMenu(divContext, path);
       document.body.appendChild(divContext);
-      var width = divContext.offsetWidth;
-      var height = divContext.offsetHeight;
-      divContext.onmouseout = function(e){
-        if(e.clientX < left || e.clientX > (left + width) || e.clientY < top || e.clientY > (top + height)){
-          if(document.body.getElementsByClassName('contextMenu').length > 0) document.body.removeChild(divContext);
-        }
+      divContext.onmouseleave = function(e){
+          if(document.body.getElementsByClassName('contextMenu').length > 0){
+            document.body.removeChild(divContext);
+          }
       };
     }
 
